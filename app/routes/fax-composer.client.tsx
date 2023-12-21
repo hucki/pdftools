@@ -41,7 +41,13 @@ export default function FaxComposer() {
     UploadMetaData | undefined
   >();
   const [resultingPDF, setResultingPDF] = useState<Uint8Array | undefined>();
-
+  const now = new Date();
+  const fileName =
+    now.getFullYear() +
+    now.getMonth() +
+    now.getDay() +
+    "_TO_" +
+    recepient.replace(" ", "_");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // as maxFiles: 1 we can safely assume there will be only one file
@@ -94,10 +100,10 @@ export default function FaxComposer() {
           recepient,
           {
             bytes: uploadedPdf,
-            fileName: "datei.pdf",
+            fileName,
             description: "pdfAnhang",
-            creationDate: "01.01.1970",
-            modificationDate: "01.01.1970",
+            creationDate: now.toISOString(),
+            modificationDate: now.toISOString(),
           },
           content
         );
@@ -180,8 +186,17 @@ export default function FaxComposer() {
                 : "bg-orange-400 text-slate-950 cursor-pointer"
             }`}
           >
-            PDF erzeugen
+            🛠️ PDF erzeugen
           </button>
+          {resultingPdfUrl && (
+            <a
+              href={resultingPdfUrl}
+              download={fileName + ".pdf"}
+              className="rounded-md p-1 bg-green-500 text-slate-950 cursor-pointer text-center"
+            >
+              💾 Ergebnis herunterladen
+            </a>
+          )}
         </div>
       </div>
       {resultingPdfUrl && (
