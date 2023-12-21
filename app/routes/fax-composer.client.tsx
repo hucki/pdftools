@@ -33,6 +33,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function FaxComposer() {
+  const [sender, setSender] = useState<string>("");
   const [recepient, setRecepient] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [uploadedPdf, setUploadedPdf] = useState<ArrayBuffer | undefined>();
@@ -51,7 +52,6 @@ export default function FaxComposer() {
         size: file.size,
         lastModifiedDate: new Date(file.lastModified),
       });
-      console.log("🍕", { file });
       const reader = new FileReader();
 
       reader.onabort = () => console.log("file reading was aborted");
@@ -81,14 +81,16 @@ export default function FaxComposer() {
     if (resultingPDF) setResultingPDF(undefined);
     const field = e.currentTarget.name;
     e.preventDefault();
+    if (field === "sender") setSender(e.currentTarget.value);
     if (field === "recepient") setRecepient(e.currentTarget.value);
     if (field === "content") setContent(e.currentTarget.value);
   };
 
   const handleCreatePdf = async () => {
-    if (recepient && uploadedPdf && content) {
+    if (sender && recepient && uploadedPdf && content) {
       try {
         const doc = await createPdf(
+          sender,
           recepient,
           {
             bytes: uploadedPdf,
@@ -110,37 +112,25 @@ export default function FaxComposer() {
     ? URL.createObjectURL(new Blob([resultingPDF], { type: "application/pdf" }))
     : undefined;
 
-  const isDisabled = !uploadedPdf || !recepient?.length;
+  const isDisabled =
+    !uploadedPdf || !sender.length || !recepient.length || !content.length;
 
   return (
     <div className="grid grid-cols-2">
       <div>
-        <div
-          className="p-4 m-4 bg-slate-100 border border-dashed border-spacing-1"
-          {...getRootProps()}
-        >
-          <input {...getInputProps()} />
-          {isDragActive ? (
-            <p className="text-slate-400">
-              Bitte das zu faxende PDF hier ablegen ...
-            </p>
-          ) : (
-            <p className="text-slate-400">
-              Bitte das zu faxende PDF hier ablegen, oder klicken um eine Datei
-              auszuwählen
-            </p>
-          )}
-        </div>
-        {uploadMetaData ? (
-          <div className="file m-4 font-mono text-xs">
-            Fax: <b>{uploadMetaData?.name}</b> (
-            {uploadMetaData?.lastModifiedDate.toLocaleString()} -{" "}
-            {uploadMetaData?.size} byte){" "}
-          </div>
-        ) : null}
         <div className="grid grid-rows-1 m-4 gap-2">
           <label>
-            Empfänger:{" "}
+            Von:{" "}
+            <input
+              className="border rounded-md p-1 w-full"
+              type="text"
+              name="sender"
+              value={sender}
+              onChange={handleChange}
+            />
+          </label>
+          <label>
+            An:{" "}
             <input
               className="border rounded-md p-1 w-full"
               type="text"
@@ -158,6 +148,29 @@ export default function FaxComposer() {
               onChange={handleChange}
             />
           </label>
+          <div
+            className="p-4 m-4 bg-slate-100 border border-dashed border-spacing-1"
+            {...getRootProps()}
+          >
+            <input {...getInputProps()} />
+            {isDragActive ? (
+              <p className="text-slate-400">
+                Bitte das zu faxende PDF hier ablegen ...
+              </p>
+            ) : (
+              <p className="text-slate-400">
+                Bitte das zu faxende PDF hier ablegen, oder klicken um eine
+                Datei auszuwählen
+              </p>
+            )}
+          </div>
+          {uploadMetaData ? (
+            <div className="file m-4 font-mono text-xs">
+              ✅ Anhang: <b>{uploadMetaData?.name}</b> (
+              {uploadMetaData?.lastModifiedDate.toLocaleString()} -{" "}
+              {uploadMetaData?.size} byte){" "}
+            </div>
+          ) : null}
           <button
             disabled={isDisabled}
             onClick={handleCreatePdf}
@@ -167,7 +180,7 @@ export default function FaxComposer() {
                 : "bg-orange-400 text-slate-950 cursor-pointer"
             }`}
           >
-            create PDF
+            PDF erzeugen
           </button>
         </div>
       </div>
