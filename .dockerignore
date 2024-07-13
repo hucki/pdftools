@@ -2,3 +2,5 @@
 node_modules/
 build
 *.tar
+.docker_temp*
+.DS_Store

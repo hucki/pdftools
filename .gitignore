@@ -6,3 +6,4 @@ node_modules
 .env
 *.tar
 .DS_Store
+.docker_temp*
