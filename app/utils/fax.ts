@@ -34,9 +34,8 @@ export const sendFax = async (
   };
 
   try {
-    // const sendFaxResponse = await axios(`/sessions/fax`, requestOptions);
-    console.log({ r: requestOptions.baseURL });
-    return { data: { sessionId: "123456" } }; //sendFaxResponse;
+    const sendFaxResponse = await axios(`/sessions/fax`, requestOptions);
+    return sendFaxResponse;
   } catch (error) {
     console.error("Error:", (error as AxiosError).message);
     return null;
