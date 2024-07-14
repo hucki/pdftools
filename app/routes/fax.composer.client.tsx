@@ -44,7 +44,7 @@ export default function FaxComposer() {
     .toString()
     .padStart(2, "0")}-${now.getDate()}`;
 
-  const fileName = today + "_TO_" + recipientName.replace(" ", "_");
+  const fileName = today + "_fax-an_" + recipientName.replace(" ", "_");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // as maxFiles: 1 we can safely assume there will be only one file
@@ -155,7 +155,7 @@ export default function FaxComposer() {
   )?.data as FaxSendResult;
 
   return (
-    <div className="grid grid-cols-2">
+    <div className="grid grid-cols-1 md:grid-cols-2">
       <div>
         <div className="grid grid-rows-1 m-4 gap-2">
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
@@ -255,7 +255,14 @@ export default function FaxComposer() {
             )}
             {resultingPdfUrl && (
               <div className="file p-4 font-mono text-xs bg-green-100 border border-green-500">
-                ✅ FAX erzeugt: <b>{fileName + ".pdf"}</b> (s. Vorschau)
+                ✅ FAX erzeugt: <b>{fileName + ".pdf"}</b> (s. Vorschau){" "}
+                <a
+                  href={resultingPdfUrl}
+                  download={fileName + ".pdf"}
+                  className="rounded-md p-2 m-2 bg-green-500 text-slate-950 cursor-pointer text-center"
+                >
+                  💾
+                </a>
               </div>
             )}
           </div>
