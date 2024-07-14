@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { createPdf } from "../utils/pdf";
-import { Form, useFetchers } from "@remix-run/react";
+import { Form, useFetchers, useRouteLoaderData } from "@remix-run/react";
 import { FaxSendResult } from "./fax.send";
+import { EnvStatus } from "./fax";
 
 type UploadMetaData = {
   name: string;
@@ -19,6 +20,7 @@ const defaultState = {
 };
 
 export default function FaxComposer() {
+  const status = useRouteLoaderData<EnvStatus>("routes/fax");
   const fetchers = useFetchers();
   const [sender, setSender] = useState<string>(defaultState.sender);
   const [recipientName, setRecipientName] = useState<string>(
@@ -257,53 +259,60 @@ export default function FaxComposer() {
               </div>
             )}
           </div>
-
-          <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-            <h2 className="text-xl">4. Fax versenden</h2>
-            {recipientNumberMatch && resultingPdfUrl && resultingPDFBase64 && (
-              <Form method="POST" action="/fax/send" navigate={false}>
-                <input
-                  type="hidden"
-                  name="recipientName"
-                  value={recipientName}
-                />
-                <input
-                  type="hidden"
-                  name="recipientNumber"
-                  value={recipientNumber}
-                />
-                <input
-                  type="hidden"
-                  name="fileName"
-                  value={fileName + ".pdf"}
-                />
-                <input type="hidden" name="pdf" value={resultingPDFBase64} />
-                <button
-                  // disabled={!!currentSendActionResult}
-                  className={`rounded-md p-2 m-2 ${
-                    currentSendActionResult
-                      ? "bg-gray-200 text-slate-500 italic cursor-not-allowed"
-                      : "bg-teal-500 text-slate-950 cursor-pointer"
-                  }  text-center`}
-                  type="submit"
+          {status === "ok" && (
+            <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
+              <h2 className="text-xl">4. Fax versenden</h2>
+              {recipientNumberMatch &&
+                resultingPdfUrl &&
+                resultingPDFBase64 && (
+                  <Form method="POST" action="/fax/send" navigate={false}>
+                    <input
+                      type="hidden"
+                      name="recipientName"
+                      value={recipientName}
+                    />
+                    <input
+                      type="hidden"
+                      name="recipientNumber"
+                      value={recipientNumber}
+                    />
+                    <input
+                      type="hidden"
+                      name="fileName"
+                      value={fileName + ".pdf"}
+                    />
+                    <input
+                      type="hidden"
+                      name="pdf"
+                      value={resultingPDFBase64}
+                    />
+                    <button
+                      // disabled={!!currentSendActionResult}
+                      className={`rounded-md p-2 m-2 ${
+                        currentSendActionResult
+                          ? "bg-gray-200 text-slate-500 italic cursor-not-allowed"
+                          : "bg-teal-500 text-slate-950 cursor-pointer"
+                      }  text-center`}
+                      type="submit"
+                    >
+                      📨 erzeugtes Fax versenden
+                    </button>
+                  </Form>
+                )}
+              {currentSendActionResult?.result && (
+                <div
+                  className={`p-4 border file font-mono text-xs ${
+                    currentSendActionResult.result === "success"
+                      ? "bg-green-100 border border-green-500"
+                      : "bg-red-100 border border-red-500"
+                  } `}
                 >
-                  📨 erzeugtes Fax versenden
-                </button>
-              </Form>
-            )}
-            {currentSendActionResult?.result && (
-              <div
-                className={`p-4 border file font-mono text-xs ${
-                  currentSendActionResult.result === "success"
-                    ? "bg-green-100 border border-green-500"
-                    : "bg-red-100 border border-red-500"
-                } `}
-              >
-                {currentSendActionResult.result === "success" ? "✅ " : "❌ "}
-                {currentSendActionResult.message}
-              </div>
-            )}
-          </div>
+                  {currentSendActionResult.result === "success" ? "✅ " : "❌ "}
+                  {currentSendActionResult.message}
+                </div>
+              )}
+            </div>
+          )}
           {resultingPdfUrl && (
             <button
               onClick={handleResetForm}
