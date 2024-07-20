@@ -258,7 +258,7 @@ export default function FaxComposer() {
             ) : null}
           </div>
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-            <h2 className="text-xl">Deckblatt + Anhang kombinieren</h2>
+            <h2 className="text-xl">Fax erzeugen</h2>
             <button
               disabled={!readyToCreateFax}
               onClick={handleCreatePdf}
@@ -272,7 +272,8 @@ export default function FaxComposer() {
             </button>
             {!readyToCreateFax && (
               <span className="text-red-500 p-1 italic text-sm">
-                Bitte erst Deckblatt ausfüllen und Anhang hochladen{" "}
+                Bitte erst {hasCoverPage ? "Deckblatt" : "Faxnummer"} ausfüllen
+                und Anhang hochladen{" "}
               </span>
             )}
             {resultingPdfUrl && (
