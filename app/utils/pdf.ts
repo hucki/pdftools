@@ -13,81 +13,83 @@ export type PdfAttachment = {
   modificationDate: string;
 };
 
-export type CreatePdfProps = {
+type CreatePdfProps = {
+  coverPage?: CoverPage;
+  pdfAttachment: PdfAttachment;
+};
+
+export type CoverPage = {
   sender: string;
   recipient: string;
   recipientNumber: string;
-  pdfAttachment: PdfAttachment;
   content: string;
 };
 
-async function createPdf({
-  sender,
-  recipient,
-  recipientNumber,
-  pdfAttachment,
-  content,
-}: CreatePdfProps) {
+async function createPdf({ coverPage, pdfAttachment }: CreatePdfProps) {
+  coverPage;
   const pdfAttachmentBytes = pdfAttachment?.bytes;
   const fontSize = 20;
   try {
     const pdfDoc = await PDFDocument.create();
-    const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-    const timesRomanBoldFont = await pdfDoc.embedFont(
-      StandardFonts.TimesRomanBold
-    );
-    const page = pdfDoc.addPage();
-    const { height } = page.getSize();
-    page.drawText("von:", {
-      x: 50,
-      y: height - 4 * fontSize,
-      size: fontSize,
-      font: timesRomanFont,
-    });
-    page.drawText(sender, {
-      x: 100,
-      y: height - 4 * fontSize,
-      size: fontSize,
-      font: timesRomanBoldFont,
-    });
-    page.drawText("an:", {
-      x: 50,
-      y: height - 6 * fontSize,
-      size: fontSize,
-      font: timesRomanFont,
-    });
-    page.drawText(recipient, {
-      x: 100,
-      y: height - 6 * fontSize,
-      size: fontSize,
-      font: timesRomanBoldFont,
-    });
-    page.drawText(recipientNumber, {
-      x: 100,
-      y: height - 7 * fontSize,
-      size: fontSize,
-      font: timesRomanBoldFont,
-    });
-    const multiLineContent = layoutMultilineText(content, {
-      alignment: TextAlignment.Left,
-      font: timesRomanFont,
-      fontSize,
-      bounds: {
+    if (coverPage) {
+      const { sender, recipient, recipientNumber, content } = coverPage;
+
+      const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+      const timesRomanBoldFont = await pdfDoc.embedFont(
+        StandardFonts.TimesRomanBold
+      );
+      const page = pdfDoc.addPage();
+      const { height } = page.getSize();
+      page.drawText("von:", {
         x: 50,
-        y: height - 8 * fontSize,
-        width: 500,
-        height: 500,
-      },
-    });
-    multiLineContent.lines.forEach((line, index) => {
-      page.drawText(line.text, {
-        x: 50,
-        y: height - 10 * fontSize - index * fontSize * 1.2,
+        y: height - 4 * fontSize,
         size: fontSize,
         font: timesRomanFont,
       });
-    });
-    console.log(multiLineContent);
+      page.drawText(sender, {
+        x: 100,
+        y: height - 4 * fontSize,
+        size: fontSize,
+        font: timesRomanBoldFont,
+      });
+      page.drawText("an:", {
+        x: 50,
+        y: height - 6 * fontSize,
+        size: fontSize,
+        font: timesRomanFont,
+      });
+      page.drawText(recipient, {
+        x: 100,
+        y: height - 6 * fontSize,
+        size: fontSize,
+        font: timesRomanBoldFont,
+      });
+      page.drawText(recipientNumber, {
+        x: 100,
+        y: height - 7 * fontSize,
+        size: fontSize,
+        font: timesRomanBoldFont,
+      });
+      const multiLineContent = layoutMultilineText(content, {
+        alignment: TextAlignment.Left,
+        font: timesRomanFont,
+        fontSize,
+        bounds: {
+          x: 50,
+          y: height - 8 * fontSize,
+          width: 500,
+          height: 500,
+        },
+      });
+      multiLineContent.lines.forEach((line, index) => {
+        page.drawText(line.text, {
+          x: 50,
+          y: height - 10 * fontSize - index * fontSize * 1.2,
+          size: fontSize,
+          font: timesRomanFont,
+        });
+      });
+    }
     // Add the PDF attachment
     if (pdfAttachmentBytes) {
       const pdfToEmbed = await PDFDocument.load(pdfAttachmentBytes);
