@@ -5,6 +5,7 @@ import { createPdf } from "../utils/pdf";
 import { Form, useFetchers, useRouteLoaderData } from "@remix-run/react";
 import { FaxSendResult } from "./fax.send";
 import { EnvStatus } from "./fax";
+import { CoverPageForm } from "../components/organisms/CoverPageForm";
 
 type UploadMetaData = {
   name: string;
@@ -22,6 +23,7 @@ const defaultState = {
 export default function FaxComposer() {
   const status = useRouteLoaderData<EnvStatus>("routes/fax");
   const fetchers = useFetchers();
+  const [hasCoverPage, setHasCoverPage] = useState(true);
   const [sender, setSender] = useState<string>(defaultState.sender);
   const [recipientName, setRecipientName] = useState<string>(
     defaultState.recipientName
@@ -101,12 +103,20 @@ export default function FaxComposer() {
     setCurrentSendActionKey("");
   };
   const handleCreatePdf = async () => {
-    if (sender && recipientName && uploadedPdf && content) {
+    if (
+      uploadedPdf &&
+      ((sender && recipientName && content) || !hasCoverPage)
+    ) {
       try {
         const result = await createPdf({
-          sender,
-          recipient: recipientName,
-          recipientNumber: recipientNumber,
+          coverPage: hasCoverPage
+            ? {
+                sender,
+                recipient: recipientName,
+                recipientNumber: recipientNumber,
+                content,
+              }
+            : undefined,
           pdfAttachment: {
             bytes: uploadedPdf,
             fileName,
@@ -114,7 +124,6 @@ export default function FaxComposer() {
             creationDate: now.toISOString(),
             modificationDate: now.toISOString(),
           },
-          content,
         });
         if (result) {
           const { doc, base64string } = result;
@@ -131,15 +140,17 @@ export default function FaxComposer() {
     ? URL.createObjectURL(new Blob([resultingPDF], { type: "application/pdf" }))
     : undefined;
 
-  const recipientNumberMatch = recipientNumber.match(/^\+[1-9]\d{1,14}$/);
+  const recipientNumberMatch = Boolean(
+    recipientNumber.match(/^\+[1-9]\d{1,14}$/)
+  );
 
-  const isDisabled =
-    !uploadedPdf ||
-    !sender.length ||
-    !recipientName.length ||
-    !recipientNumber.length ||
-    !recipientNumberMatch ||
-    !content.length;
+  // const isDisabled =
+  //   !uploadedPdf ||
+  //   !sender.length ||
+  //   !recipientName.length ||
+  //   !recipientNumber.length ||
+  //   !recipientNumberMatch ||
+  //   !content.length;
 
   useEffect(() => {
     const sendAction = fetchers.find(
@@ -154,32 +165,23 @@ export default function FaxComposer() {
     (fetcher) => fetcher.key === currentSendActionKey
   )?.data as FaxSendResult;
 
+  const readyCoverPage =
+    !hasCoverPage || (hasCoverPage && sender && recipientName && content);
+  const readyToCreateFax = recipientNumberMatch && uploadedPdf;
+  const canSendFax =
+    status === "ok" &&
+    readyCoverPage &&
+    readyToCreateFax &&
+    resultingPdfUrl &&
+    resultingPDFBase64;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
       <div>
         <div className="grid grid-rows-1 m-4 gap-2">
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-            <h2 className="text-xl mb-2">1. Deckblatt ausfüllen</h2>
-            <label className="text-slate-500">
-              Von (Name):{" "}
-              <input
-                className="border rounded-md p-1 w-full text-black"
-                type="text"
-                name="sender"
-                value={sender}
-                onChange={handleChange}
-              />
-            </label>
-            <label className="text-slate-500">
-              An (Name):{" "}
-              <input
-                className="border rounded-md p-1 w-full text-black"
-                type="text"
-                name="recipientName"
-                value={recipientName}
-                onChange={handleChange}
-              />
-            </label>
+            <h2 className="text-xl">Faxnummer eingeben</h2>
+
             <label className="text-slate-500">
               An (<span className="font-bold">Faxnummer</span>):{" "}
               <input
@@ -199,18 +201,38 @@ export default function FaxComposer() {
                 </span>
               )}
             </label>
-            <label className="text-slate-500">
-              Anschreiben:{" "}
-              <textarea
-                className="border rounded-md p-1 w-full text-black"
-                name="content"
-                value={content}
-                onChange={handleChange}
-              />
-            </label>
           </div>
+          {/* add a switch to toggle hasCoverPage */}
+          <label className="text-slate-500">
+            Deckblatt hinzufügen:{" "}
+            <input
+              type="checkbox"
+              checked={hasCoverPage}
+              onChange={() => {
+                if (resultingPdfUrl) handleResetForm();
+                setHasCoverPage(!hasCoverPage);
+              }}
+            />
+            {resultingPdfUrl && (
+              <span className="text-red-500 p-1 italic text-sm">
+                <i> (Formular wir zurückgesetzt)</i>
+              </span>
+            )}
+          </label>
+          {hasCoverPage && (
+            <CoverPageForm
+              {...{
+                sender,
+                recipientName,
+                recipientNumber,
+                recipientNumberMatch,
+                content,
+                onChange: handleChange,
+              }}
+            />
+          )}
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-            <h2 className="text-xl">2. Anhang hochladen</h2>
+            <h2 className="text-xl">Anhang hochladen</h2>
             <div
               className="p-4 m-4 bg-lime-100 border border-dashed border-spacing-1 border-lime400 cursor-copy"
               {...getRootProps()}
@@ -236,19 +258,19 @@ export default function FaxComposer() {
             ) : null}
           </div>
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-            <h2 className="text-xl">3. Deckblatt + Anhang kombinieren</h2>
+            <h2 className="text-xl">Deckblatt + Anhang kombinieren</h2>
             <button
-              disabled={isDisabled}
+              disabled={!readyToCreateFax}
               onClick={handleCreatePdf}
               className={`rounded-md p-2 m-2 ${
-                isDisabled
+                !readyToCreateFax
                   ? "bg-orange-100 text-slate-500 cursor-not-allowed"
                   : "bg-orange-400 text-slate-950 cursor-pointer"
               }`}
             >
               🛠️ FAX erzeugen
             </button>
-            {isDisabled && (
+            {!readyToCreateFax && (
               <span className="text-red-500 p-1 italic text-sm">
                 Bitte erst Deckblatt ausfüllen und Anhang hochladen{" "}
               </span>
@@ -266,46 +288,38 @@ export default function FaxComposer() {
               </div>
             )}
           </div>
-          {status === "ok" && (
+          {canSendFax && (
             <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-              <h2 className="text-xl">4. Fax versenden</h2>
-              {recipientNumberMatch &&
-                resultingPdfUrl &&
-                resultingPDFBase64 && (
-                  <Form method="POST" action="/fax/send" navigate={false}>
-                    <input
-                      type="hidden"
-                      name="recipientName"
-                      value={recipientName}
-                    />
-                    <input
-                      type="hidden"
-                      name="recipientNumber"
-                      value={recipientNumber}
-                    />
-                    <input
-                      type="hidden"
-                      name="fileName"
-                      value={fileName + ".pdf"}
-                    />
-                    <input
-                      type="hidden"
-                      name="pdf"
-                      value={resultingPDFBase64}
-                    />
-                    <button
-                      // disabled={!!currentSendActionResult}
-                      className={`rounded-md p-2 m-2 ${
-                        currentSendActionResult
-                          ? "bg-gray-200 text-slate-500 italic cursor-not-allowed"
-                          : "bg-teal-500 text-slate-950 cursor-pointer"
-                      }  text-center`}
-                      type="submit"
-                    >
-                      📨 erzeugtes Fax versenden
-                    </button>
-                  </Form>
-                )}
+              <h2 className="text-xl">Fax versenden</h2>
+              <Form method="POST" action="/fax/send" navigate={false}>
+                <input
+                  type="hidden"
+                  name="recipientName"
+                  value={recipientName}
+                />
+                <input
+                  type="hidden"
+                  name="recipientNumber"
+                  value={recipientNumber}
+                />
+                <input
+                  type="hidden"
+                  name="fileName"
+                  value={fileName + ".pdf"}
+                />
+                <input type="hidden" name="pdf" value={resultingPDFBase64} />
+                <button
+                  // disabled={!!currentSendActionResult}
+                  className={`rounded-md p-2 m-2 ${
+                    currentSendActionResult
+                      ? "bg-gray-200 text-slate-500 italic cursor-not-allowed"
+                      : "bg-teal-500 text-slate-950 cursor-pointer"
+                  }  text-center`}
+                  type="submit"
+                >
+                  📨 erzeugtes Fax versenden
+                </button>
+              </Form>
               {currentSendActionResult?.result && (
                 <div
                   className={`p-4 border file font-mono text-xs ${
