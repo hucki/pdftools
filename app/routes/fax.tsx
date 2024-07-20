@@ -15,9 +15,9 @@ export default function Fax() {
   return (
     <div>
       <div
-        className={`h-2 w-2 rounded-xl ${
+        className={`fax-status h-2 w-2 rounded-xl ${
           status === "ok" ? "bg-green-500" : "bg-red-500"
-        } absolute`}
+        } fixed`}
       />
       <Outlet />
     </div>
