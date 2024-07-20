@@ -4,8 +4,9 @@ import { useDropzone } from "react-dropzone";
 import { createPdf } from "../utils/pdf";
 import { Form, useFetchers, useRouteLoaderData } from "@remix-run/react";
 import { FaxSendResult } from "./fax.send";
-import { EnvStatus } from "./fax";
 import { CoverPageForm } from "../components/organisms/CoverPageForm";
+import { LoaderResult } from "./fax";
+import { Contact, FaxContact } from "../utils/contacts";
 
 type UploadMetaData = {
   name: string;
@@ -20,11 +21,32 @@ const defaultState = {
   content: "Sehr geehrte Damen und Herren, ...",
 };
 
+export const getFaxContacts = (contacts: Contact[]): FaxContact[] => {
+  return contacts
+    .filter((contact) => {
+      return contact.numbers.some((number) => number.type.includes("fax"));
+    })
+    .map((contact) => {
+      return {
+        id: contact.id,
+        name: contact.name,
+        givenName: contact.givenname,
+        familyName: contact.familyname,
+        numberType: "fax",
+        number: contact.numbers.find((number) => number.type.includes("fax"))
+          ?.number,
+      };
+    });
+};
+
 export default function FaxComposer() {
-  const status = useRouteLoaderData<EnvStatus>("routes/fax");
+  const loaderData = useRouteLoaderData<LoaderResult>("routes/fax");
   const fetchers = useFetchers();
   const [hasCoverPage, setHasCoverPage] = useState(true);
   const [sender, setSender] = useState<string>(defaultState.sender);
+  const [faxContacts, setFaxContacts] = useState<FaxContact[]>([]);
+  const [searchValue, setSearchValue] = useState<string>("");
+  const [filteredContacts, setFilteredContacts] = useState<FaxContact[]>([]);
   const [recipientName, setRecipientName] = useState<string>(
     defaultState.recipientName
   );
@@ -79,6 +101,14 @@ export default function FaxComposer() {
     },
     maxFiles: 1,
   });
+  useEffect(() => {
+    if (faxContacts.length) {
+      return;
+    }
+    if (loaderData?.status === "ok" && loaderData.contacts) {
+      setFaxContacts(getFaxContacts(loaderData.contacts as Contact[]));
+    }
+  }, [loaderData?.contacts, faxContacts, loaderData?.status]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -92,11 +122,13 @@ export default function FaxComposer() {
     if (field === "content") setContent(e.currentTarget.value);
   };
 
-  const handleResetForm = () => {
-    setSender(defaultState.sender);
-    setRecipientName(defaultState.recipientName);
-    setRecipientNumber(defaultState.recipientNumber);
-    setContent(defaultState.content);
+  const handleReset = (onlyResultingPdf: boolean = false) => {
+    if (!onlyResultingPdf) {
+      setSender(defaultState.sender);
+      setRecipientName(defaultState.recipientName);
+      setRecipientNumber(defaultState.recipientNumber);
+      setContent(defaultState.content);
+    }
     setUploadedPdf(undefined);
     setUploadMetaData(undefined);
     setResultingPDF(undefined);
@@ -141,16 +173,8 @@ export default function FaxComposer() {
     : undefined;
 
   const recipientNumberMatch = Boolean(
-    recipientNumber.match(/^\+[1-9]\d{1,14}$/)
+    recipientNumber.match(/^\+[1-9]\d{9,14}$/)
   );
-
-  // const isDisabled =
-  //   !uploadedPdf ||
-  //   !sender.length ||
-  //   !recipientName.length ||
-  //   !recipientNumber.length ||
-  //   !recipientNumberMatch ||
-  //   !content.length;
 
   useEffect(() => {
     const sendAction = fetchers.find(
@@ -169,19 +193,69 @@ export default function FaxComposer() {
     !hasCoverPage || (hasCoverPage && sender && recipientName && content);
   const readyToCreateFax = recipientNumberMatch && uploadedPdf;
   const canSendFax =
-    status === "ok" &&
+    loaderData?.status === "ok" &&
     readyCoverPage &&
     readyToCreateFax &&
     resultingPdfUrl &&
     resultingPDFBase64;
-
+  useEffect(() => {
+    if (searchValue === "") {
+      setFilteredContacts([]);
+    }
+  }, [searchValue]);
+  const handleSelectFaxContact = (contact: FaxContact) => {
+    setRecipientNumber(contact.number || "");
+    setRecipientName(
+      contact.familyName + (contact.givenName ? ", " + contact.givenName : "")
+    );
+    setSearchValue("");
+  };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
       <div>
         <div className="grid grid-rows-1 m-4 gap-2">
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
             <h2 className="text-xl">Faxnummer eingeben</h2>
-
+            <label className="text-slate-500">
+              Suche Faxempfänger (oder manuell eingeben):{" "}
+              <input
+                placeholder="bitte Namen eingeben"
+                className="border rounded-md p-1 w-full text-black"
+                type="text"
+                name="search"
+                autoComplete="off"
+                onChange={(e) => {
+                  setSearchValue(e.target.value);
+                  setFilteredContacts(
+                    faxContacts.filter((contact) =>
+                      contact.name
+                        .toLowerCase()
+                        .includes(searchValue.toLowerCase())
+                    )
+                  );
+                  if (searchValue === "") {
+                    setFilteredContacts([]);
+                  }
+                }}
+              />
+              {filteredContacts.length > 0 && searchValue !== "" && (
+                <div className="relative">
+                  <div className="absolute z-5 bg-white border border-gray-300 rounded-md mt-2 w-full grid grid-cols-1">
+                    {filteredContacts.map((contact) => (
+                      <button
+                        key={contact.id}
+                        className="p-2 cursor-pointer hover:bg-gray-100 text-start"
+                        onKeyDown={() => handleSelectFaxContact(contact)}
+                        onClick={() => handleSelectFaxContact(contact)}
+                      >
+                        {contact.familyName}, {contact.givenName} -{" "}
+                        {contact.number}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </label>
             <label className="text-slate-500">
               An (<span className="font-bold">Faxnummer</span>):{" "}
               <input
@@ -209,7 +283,7 @@ export default function FaxComposer() {
               type="checkbox"
               checked={hasCoverPage}
               onChange={() => {
-                if (resultingPdfUrl) handleResetForm();
+                if (resultingPdfUrl) handleReset(true);
                 setHasCoverPage(!hasCoverPage);
               }}
             />
@@ -232,7 +306,7 @@ export default function FaxComposer() {
             />
           )}
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-            <h2 className="text-xl">Anhang hochladen</h2>
+            <h2 className="text-xl">zu faxendes Dokument hochladen</h2>
             <div
               className="p-4 m-4 bg-lime-100 border border-dashed border-spacing-1 border-lime400 cursor-copy"
               {...getRootProps()}
@@ -337,7 +411,7 @@ export default function FaxComposer() {
           )}
           {resultingPdfUrl && (
             <button
-              onClick={handleResetForm}
+              onClick={() => handleReset()}
               className="rounded-md p-2 bg-orange-300 text-slate-950 cursor-pointer text-center justify-self-end"
             >
               ♻️ alles zurücksetzen
