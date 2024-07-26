@@ -173,7 +173,7 @@ export default function FaxComposer() {
     : undefined;
 
   const recipientNumberMatch = Boolean(
-    recipientNumber.match(/^\+[1-9]\d{9,14}$/)
+    recipientNumber.match(/^\+[1-9]\d{7,14}$/)
   );
 
   useEffect(() => {
@@ -217,7 +217,7 @@ export default function FaxComposer() {
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
             <h2 className="text-xl">Faxnummer eingeben</h2>
             <label className="text-slate-500">
-              Suche Faxempfänger (oder manuell eingeben):{" "}
+              Suche Faxempfänger (oder unten manuell eingeben):{" "}
               <input
                 placeholder="bitte Namen eingeben"
                 className="border rounded-md p-1 w-full text-black"
