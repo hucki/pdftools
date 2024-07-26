@@ -271,7 +271,7 @@ export default function FaxComposer() {
               />
               {!recipientNumberMatch && (
                 <span className="text-red-500 p-1 italic text-sm">
-                  Bitte Faxnummer im Format +49293112345 angeben{" "}
+                  🚨 Bitte Faxnummer im Format +49293112345 angeben 🚨
                 </span>
               )}
             </label>
