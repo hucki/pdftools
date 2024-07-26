@@ -419,16 +419,19 @@ export default function FaxComposer() {
           )}
         </div>
       </div>
-      {resultingPdfUrl && (
-        <div className="p-4 m-4 bg-slate-100 border border-dashed border-spacing-1 ">
-          <h2 className="text-xl">Vorschau</h2>
+      <div className="p-4 m-4 bg-slate-100 border border-dashed border-spacing-1 ">
+        <h2 className="text-xl">Vorschau </h2>
+        {!resultingPdfUrl && (
+          <h3>(erscheint hier sobald das Fax erzeugt wurde)</h3>
+        )}
+        {resultingPdfUrl && (
           <embed
             className="m-4 w-11/12 h-full"
             src={resultingPdfUrl}
             type="application/pdf"
           ></embed>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
