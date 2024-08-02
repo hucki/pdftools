@@ -1,20 +1,29 @@
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { Contact, fetchContacts } from "../utils/contacts";
+import { FaxHistoryResult, fetchHistory } from "../utils/history";
 
 export type LoaderResult = {
   status: string;
   contacts: Contact[];
+  faxHistory: FaxHistoryResult[];
 };
 
 export const loader = async (): Promise<LoaderResult> => {
   const { BASE_URL, TOKEN_ID, TOKEN, FAXLINE_ID } = process.env;
   let fetchError = false;
   const contacts: Contact[] = [];
+  const faxHistory: FaxHistoryResult[] = [];
   const envMissing = !BASE_URL || !TOKEN_ID || !TOKEN || !FAXLINE_ID;
   try {
     const contactsFetchResult = await fetchContacts();
     if (contactsFetchResult.items.length) {
       contacts.push(...contactsFetchResult.items);
+    }
+    const historyFetchResult = await fetchHistory({
+      type: "FAX",
+    });
+    if (historyFetchResult?.data.items.length) {
+      faxHistory.push(...historyFetchResult.data.items);
     }
   } catch (error) {
     fetchError = true;
@@ -23,11 +32,13 @@ export const loader = async (): Promise<LoaderResult> => {
     return {
       status: "" + (envMissing && "ENV missing") + (fetchError && "fetchError"),
       contacts,
+      faxHistory: [],
     };
   } else {
     return {
       status: "ok",
       contacts,
+      faxHistory,
     };
   }
 };
