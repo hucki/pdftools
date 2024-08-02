@@ -7,6 +7,7 @@ import { FaxSendResult } from "./fax.send";
 import { CoverPageForm } from "../components/organisms/CoverPageForm";
 import { LoaderResult } from "./fax";
 import { Contact, FaxContact } from "../utils/contacts";
+import FaxHistory from "../components/organisms/FaxHistory";
 
 type UploadMetaData = {
   name: string;
@@ -175,7 +176,6 @@ export default function FaxComposer() {
   const recipientNumberMatch = Boolean(
     recipientNumber.match(/^\+[1-9]\d{7,14}$/)
   );
-
   useEffect(() => {
     const sendAction = fetchers.find(
       (fetcher) => fetcher.formAction === "/fax/send"
@@ -211,7 +211,7 @@ export default function FaxComposer() {
     setSearchValue("");
   };
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2">
+    <div className="grid grid-cols-1 md:grid-cols-3">
       <div>
         <div className="grid grid-rows-1 m-4 gap-2">
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
@@ -432,6 +432,7 @@ export default function FaxComposer() {
           ></embed>
         )}
       </div>
+      <FaxHistory />
     </div>
   );
 }
