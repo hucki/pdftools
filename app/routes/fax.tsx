@@ -1,11 +1,14 @@
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { Contact, fetchContacts } from "../utils/contacts";
 import { FaxHistoryResult, fetchHistory } from "../utils/history";
+import { fetchCallerid, fetchTagline } from "../utils/faxlines";
 
 export type LoaderResult = {
   status: string;
   contacts: Contact[];
   faxHistory: FaxHistoryResult[];
+  callerid?: string;
+  tagline?: string;
 };
 
 export const loader = async (): Promise<LoaderResult> => {
@@ -13,8 +16,18 @@ export const loader = async (): Promise<LoaderResult> => {
   let fetchError = false;
   const contacts: Contact[] = [];
   const faxHistory: FaxHistoryResult[] = [];
+  let callerid: string | undefined = undefined;
+  let tagline: string | undefined = undefined;
   const envMissing = !BASE_URL || !TOKEN_ID || !TOKEN || !FAXLINE_ID;
   try {
+    const taglineFetchResult = await fetchTagline();
+    if (taglineFetchResult) {
+      tagline = taglineFetchResult.data;
+    }
+    const calleridFetchResult = await fetchCallerid();
+    if (calleridFetchResult) {
+      callerid = calleridFetchResult.data.value;
+    }
     const contactsFetchResult = await fetchContacts();
     if (contactsFetchResult.items.length) {
       contacts.push(...contactsFetchResult.items);
@@ -33,12 +46,16 @@ export const loader = async (): Promise<LoaderResult> => {
       status: "" + (envMissing && "ENV missing") + (fetchError && "fetchError"),
       contacts,
       faxHistory: [],
+      callerid,
+      tagline,
     };
   } else {
     return {
       status: "ok",
       contacts,
       faxHistory,
+      callerid,
+      tagline,
     };
   }
 };
