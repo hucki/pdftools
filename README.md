@@ -1,16 +1,39 @@
 # Welcome to PDFTools (FAX edition `#digitalisierung`)
 
-Simple tool to add a heading page to an existing pdf. After sipgate removed the option to prefix a pdf for faxing with additional texts (to/from/subject), I quickly created this.
+## Introduction
 
-1. Input to/from/subject
-2. upload document to fax
-3. hit "PDF erzeugen" to create a new PDF with the inputs added as an additional frontpage
-4. preview / download the result
-5. reload page to create a new pdf
+After sipgate removed the option to prefix a pdf for faxing with additional texts (to/from/subject), I quickly created this. In fact, I quickly created a tool to combine two pdfs but now we have a tool with some more features. This escalated quickly somehow...
+
+### features
+
+- retrieve current faxlines callerId and Alias (= sender name + number)
+- lookup contacts in Addressbook (= recipient name + number)
+- add cover page (optional)
+- create fax document (combine with optional cover page)
+- display fax document
+- send fax document
+- display fax journal (incoming / outgoing)
+
+## howto
+
+make sure to set all relvant ENV variables in `.env` (see `.env.example`)
+
+1. search fax recipient ("Fax Empfänger") from address book or input manually
+2. fill out cover page (optional)
+
+- recipient name (will get auto filled if searched from address book)
+- free text
+
+3. upload document to fax
+4. hit "PDF erzeugen" to create a new PDF (incl. optional cover page)
+5. preview / download the result
+6. send fax ("Fax versenden")
+
+Reload page to update the Fax Journal ("Fax Eingang/Ausgang")
 
 everything is running on the client.
 
-from - [Remix Docs](https://remix.run/docs)
+Rest from - [Remix Docs](https://remix.run/docs)
 
 ## Development
 
