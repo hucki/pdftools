@@ -44,7 +44,8 @@ export default function FaxComposer() {
   const loaderData = useRouteLoaderData<LoaderResult>("routes/fax");
   const fetchers = useFetchers();
   const [hasCoverPage, setHasCoverPage] = useState(true);
-  const [sender, setSender] = useState<string>(defaultState.sender);
+  const [sender, setSender] = useState<string>("");
+  const [senderNumber, setSenderNumber] = useState<string>("");
   const [faxContacts, setFaxContacts] = useState<FaxContact[]>([]);
   const [searchValue, setSearchValue] = useState<string>("");
   const [filteredContacts, setFilteredContacts] = useState<FaxContact[]>([]);
@@ -70,7 +71,7 @@ export default function FaxComposer() {
     .padStart(2, "0")}-${now.getDate()}`;
 
   const fileName = today + "_fax-an_" + recipientName.replace(" ", "_");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // as maxFiles: 1 we can safely assume there will be only one file
     const file = acceptedFiles[0];
@@ -102,6 +103,7 @@ export default function FaxComposer() {
     },
     maxFiles: 1,
   });
+
   useEffect(() => {
     if (faxContacts.length) {
       return;
@@ -111,13 +113,21 @@ export default function FaxComposer() {
     }
   }, [loaderData?.contacts, faxContacts, loaderData?.status]);
 
+  useEffect(() => {
+    if (loaderData?.tagline) {
+      setSender(loaderData.tagline);
+    }
+    if (loaderData?.callerid) {
+      setSenderNumber(loaderData.callerid);
+    }
+  }, [loaderData?.callerid, loaderData?.tagline]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     if (resultingPDF) setResultingPDF(undefined);
     const field = e.currentTarget.name;
     e.preventDefault();
-    if (field === "sender") setSender(e.currentTarget.value);
     if (field === "recipientName") setRecipientName(e.currentTarget.value);
     if (field === "recipientNumber") setRecipientNumber(e.currentTarget.value);
     if (field === "content") setContent(e.currentTarget.value);
@@ -125,7 +135,6 @@ export default function FaxComposer() {
 
   const handleReset = (onlyResultingPdf: boolean = false) => {
     if (!onlyResultingPdf) {
-      setSender(defaultState.sender);
       setRecipientName(defaultState.recipientName);
       setRecipientNumber(defaultState.recipientNumber);
       setContent(defaultState.content);
@@ -145,8 +154,9 @@ export default function FaxComposer() {
           coverPage: hasCoverPage
             ? {
                 sender,
+                senderNumber,
                 recipient: recipientName,
-                recipientNumber: recipientNumber,
+                recipientNumber,
                 content,
               }
             : undefined,
@@ -215,12 +225,12 @@ export default function FaxComposer() {
       <div>
         <div className="grid grid-rows-1 m-4 gap-2">
           <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-            <h2 className="text-xl">Faxnummer eingeben</h2>
+            <h2 className="text-xl">Fax Empfänger</h2>
             <label className="text-slate-500">
               Suche Faxempfänger (oder unten manuell eingeben):{" "}
               <input
-                placeholder="bitte Namen eingeben"
-                className="border rounded-md p-1 w-full text-black"
+                placeholder="🔍 Suchen in Addressbuch"
+                className="border rounded-md p-1 w-1/2 text-black"
                 type="text"
                 name="search"
                 autoComplete="off"
@@ -297,9 +307,8 @@ export default function FaxComposer() {
             <CoverPageForm
               {...{
                 sender,
+                senderNumber,
                 recipientName,
-                recipientNumber,
-                recipientNumberMatch,
                 content,
                 onChange: handleChange,
               }}
