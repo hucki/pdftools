@@ -1,19 +1,37 @@
 import { FaxHistoryItem } from "../../utils/history";
 
+type FaxStatusType = "FAILED" | "SENT" | "SENDING" | "PENDING";
+type FaxStatusItem = {
+  text: string;
+  color: string;
+};
+type FaxStatus = {
+  [key in FaxStatusType]: FaxStatusItem;
+};
+const faxStatus: FaxStatus = {
+  FAILED: {
+    text: "❌ fehlgeschlagen",
+    color: "text-red-500",
+  },
+  SENT: {
+    text: "🟩 gesendet",
+    color: "text-green-500",
+  },
+  SENDING: {
+    text: "🟧 wird gesendet",
+    color: "text-orange-500",
+  },
+  PENDING: {
+    text: "🟦 wartet",
+    color: "text-blue-500",
+  },
+};
+
 export const FaxHistoryItemList = ({ items }: { items: FaxHistoryItem[] }) => {
   return items.map((item) => {
-    const faxStatus =
-      item.faxStatusType === "FAILED"
-        ? "❌ fehlgeschlagen"
-        : item.faxStatusType === "SENT"
-        ? "🟩 gesendet"
-        : item.faxStatusType;
-    const faxStatusColor =
-      item.faxStatusType === "FAILED"
-        ? "text-red-500"
-        : item.faxStatusType === "SENT"
-        ? "text-green-500"
-        : "text-gray-500";
+    const faxStatusType = item.faxStatusType as FaxStatusType | undefined;
+    const faxStatusText = faxStatusType ? faxStatus[faxStatusType].text : "";
+    const faxStatusColor = faxStatusType ? faxStatus[faxStatusType].color : "";
     const isItemFromToday = (item: FaxHistoryItem) => {
       const today = new Date();
       const itemDate = new Date(item.lastModified);
@@ -34,13 +52,19 @@ export const FaxHistoryItemList = ({ items }: { items: FaxHistoryItem[] }) => {
           >
             {new Date(item.lastModified).toLocaleString("de-DE")}
           </span>
-          <span className={`font-bold ${faxStatusColor}`}>{faxStatus}</span>
+          <span className={`font-bold ${faxStatusColor}`}>{faxStatusText}</span>
         </div>
         <div className="flex flex-col">
-          <span>{item.sourceAlias}</span>
-          <span>
-            {item.targetAlias} - {item.target}
-          </span>
+          {item.direction === "INCOMING" && (
+            <span>
+              {item.sourceAlias} - {item.source}
+            </span>
+          )}
+          {item.direction === "OUTGOING" && (
+            <span>
+              {item.targetAlias} - {item.target}
+            </span>
+          )}
         </div>
 
         {item.direction === "INCOMING" && (
