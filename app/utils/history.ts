@@ -67,7 +67,6 @@ export const fetchHistory = async ({ type }: FetchHistoryProps) => {
         },
       }
     );
-    console.log({ historyResponse });
     return {
       data: historyResponse.data,
     };
