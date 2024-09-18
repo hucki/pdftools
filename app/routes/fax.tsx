@@ -2,6 +2,7 @@ import { Outlet, useLoaderData } from "@remix-run/react";
 import { Contact, fetchContacts } from "../utils/contacts";
 import { FaxHistoryResult, fetchHistory } from "../utils/history";
 import { fetchCallerid, fetchTagline } from "../utils/faxlines";
+import { Link } from "../components/atoms/Link";
 
 export type LoaderResult = {
   status: string;
@@ -69,6 +70,7 @@ export default function Fax() {
           status === "ok" ? "bg-green-500" : "bg-red-500"
         } fixed`}
       />
+      <Link to="/history">📞 zur Anrufliste</Link>
       <Outlet />
     </div>
   );

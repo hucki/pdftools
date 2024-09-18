@@ -11,7 +11,6 @@ export default function FaxHistory() {
   if (!historyItems?.length) {
     return <div>No history items found</div>;
   }
-  console.log({ historyItems });
 
   return (
     <div className="p-4 m-4 bg-slate-100 border border-dashed border-spacing-1 ">

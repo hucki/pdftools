@@ -1,5 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Link, Outlet } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
+import { Link } from "../components/atoms/Link";
 
 export const meta: MetaFunction = () => {
   return [
@@ -13,12 +14,8 @@ export default function Index() {
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1 className="m-2">Mundwerk PDF Tools</h1>
       <Outlet />
-      <Link
-        className="rounded-md p-1 bg-orange-400 text-slate-950 cursor-pointer"
-        to="./fax/composer/client"
-      >
-        zu den PDF tools
-      </Link>
+      <Link to="./fax/composer/client">📠 zum Fax</Link>
+      <Link to="./fax/composer/client">📞 zur Anrufliste</Link>
     </div>
   );
 }

@@ -2,41 +2,80 @@ import axios, { AxiosError } from "axios";
 
 const { BASE_URL, TOKEN_ID, TOKEN } = process.env;
 
-const exampleFaxHistoryItem = {
-  id: "5017301277",
-  source: "+49234567890",
-  target: "+49234567890",
-  sourceAlias: "",
-  targetAlias: "",
-  type: "FAX",
-  created: "2024-07-31T05:34:09Z",
-  lastModified: "2024-07-31T05:34:10Z",
-  direction: "OUTGOING",
-  incoming: false,
-  status: "PICKUP",
-  connectionIds: ["xx"],
-  read: false,
-  archived: false,
-  note: "",
-  endpoints: [
-    {
-      type: "ROUTED",
-      endpoint: {
-        extension: "xx",
-        type: "FAX",
-      },
-    },
-  ],
-  starred: false,
-  labels: [],
-  faxStatusType: "FAILED",
-  documentUrl: "#",
-  reportUrl: "#",
-  previewUrl: "#",
-  pageCount: 3,
+export type HistoryItemType = "CALL" | "VOICEMAIL" | "SMS" | "FAX";
+
+export type HistoryItem = {
+  id: string;
+  source: string;
+  target: string;
+  sourceAlias: string;
+  targetAlias: string;
+  type: HistoryItemType;
+  created: string;
+  lastModified: string;
+  direction: "INCOMING" | "OUTGOING" | "MISSED_INCOMING";
+  incoming: boolean;
+  status: string;
+  connectionIds: string[];
+  read: boolean;
+  archived: boolean;
+  note: string | null;
+  endpoints: {
+    type: string;
+    endpoint: {
+      extension: string;
+      type: string;
+    };
+  }[];
+  starred: boolean;
+  labels: string[];
+  faxStatusType?: string;
+  documentUrl?: string;
+  reportUrl?: string;
+  previewUrl?: string;
+  pageCount?: number;
+  transcription?: string;
+  recordingUrl?: string;
+  duration?: number;
 };
 
-export type FaxHistoryItem = typeof exampleFaxHistoryItem;
+export type FaxHistoryItem = {
+  id: string;
+  source: string;
+  target: string;
+  sourceAlias: string;
+  targetAlias: string;
+  type: "FAX";
+  created: string;
+  lastModified: string;
+  direction: "INCOMING" | "OUTGOING";
+  incoming: boolean;
+  status: string;
+  connectionIds: string[];
+  read: boolean;
+  archived: boolean;
+  note: string | null;
+  endpoints: {
+    type: string;
+    endpoint: {
+      extension: string;
+      type: string;
+    };
+  }[];
+  starred: boolean;
+  labels: string[];
+  faxStatusType: string;
+  documentUrl: string;
+  reportUrl: string;
+  previewUrl: string;
+  pageCount: number;
+};
+
+export type HistoryResult = {
+  data: {
+    items: HistoryItem[];
+  };
+};
 export type FaxHistoryResult = {
   data: {
     items: FaxHistoryItem[];
