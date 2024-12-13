@@ -1,5 +1,5 @@
-FROM node:lts-alpine as base
-FROM base as deps
+FROM node:lts-alpine AS base
+FROM base AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -10,7 +10,7 @@ RUN npm run build
 FROM deps AS prod-deps
 WORKDIR /app
 RUN npm install --production
-FROM base as runner
+FROM base AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 remix
 RUN adduser --system --uid 1001 remix
