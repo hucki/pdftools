@@ -1,9 +1,5 @@
-import {
-  PDFDocument,
-  StandardFonts,
-  TextAlignment,
-  layoutMultilineText,
-} from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
+import { createPrescriptionCorrectionPDF } from "../documents/PrescriptionCorrectionCover";
 
 export type PdfAttachment = {
   bytes: ArrayBuffer;
@@ -19,94 +15,35 @@ type CreatePdfProps = {
 };
 
 export type CoverPage = {
-  sender: string;
-  senderNumber: string;
   recipient: string;
   recipientNumber: string;
   content: string;
+  patientName: string;
+  prescriptionDate: string;
 };
+
+export const fontSize = 16;
 
 async function createPdf({ coverPage, pdfAttachment }: CreatePdfProps) {
   coverPage;
   const pdfAttachmentBytes = pdfAttachment?.bytes;
-  const fontSize = 16;
   try {
     const pdfDoc = await PDFDocument.create();
     if (coverPage) {
-      const { sender, senderNumber, recipient, recipientNumber, content } =
-        coverPage;
-
-      const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-      const monospacedBoldFont = await pdfDoc.embedFont(
-        StandardFonts.CourierBold
-      );
-      const page = pdfDoc.addPage();
-      const { height } = page.getSize();
-      let linePosition: number = height - 4 * fontSize;
-      const nextline = (fontSize: number) => {
-        linePosition = linePosition - fontSize;
-      };
-      page.drawText("von:", {
-        x: 50,
-        y: linePosition,
-        size: fontSize,
-        font: timesRomanFont,
-      });
-      page.drawText(sender, {
-        x: 100,
-        y: linePosition,
-        size: fontSize,
-        font: timesRomanFont,
-      });
-      nextline(fontSize);
-      page.drawText(senderNumber, {
-        x: 100,
-        y: linePosition,
-        size: fontSize,
-        font: monospacedBoldFont,
-      });
-      nextline(fontSize);
-      nextline(fontSize);
-      page.drawText("an:", {
-        x: 50,
-        y: linePosition,
-        size: fontSize,
-        font: timesRomanFont,
-      });
-      page.drawText(recipient, {
-        x: 100,
-        y: linePosition,
-        size: fontSize,
-        font: timesRomanFont,
-      });
-      nextline(fontSize);
-      page.drawText(recipientNumber, {
-        x: 100,
-        y: linePosition,
-        size: fontSize,
-        font: monospacedBoldFont,
-      });
-      nextline(fontSize);
-      nextline(fontSize);
-      nextline(fontSize);
-      const multiLineContent = layoutMultilineText(content, {
-        alignment: TextAlignment.Left,
-        font: timesRomanFont,
-        fontSize,
-        bounds: {
-          x: 50,
-          y: linePosition,
-          width: 500,
-          height: 500,
-        },
-      });
-      multiLineContent.lines.forEach((line, index) => {
-        page.drawText(line.text, {
-          x: 50,
-          y: linePosition - index * fontSize * 1.2,
-          size: fontSize,
-          font: timesRomanFont,
-        });
+      const {
+        recipient,
+        recipientNumber,
+        content,
+        patientName,
+        prescriptionDate,
+      } = coverPage;
+      createPrescriptionCorrectionPDF({
+        patientName,
+        prescriptionDate,
+        correctionText: content,
+        recipientName: recipient,
+        recipientNumber: recipientNumber,
+        pdfDoc,
       });
     }
     // Add the PDF attachment

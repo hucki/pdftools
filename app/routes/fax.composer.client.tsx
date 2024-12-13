@@ -19,7 +19,7 @@ const defaultState = {
   sender: "Mundwerk Logopädische Praxis",
   recipientName: "",
   recipientNumber: "",
-  content: "Sehr geehrte Damen und Herren, ...",
+  content: "Datum der VO muss sein xx.xx.xxxx \n ... weitere Korrtekturen ...",
 };
 
 export const getFaxContacts = (contacts: Contact[]): FaxContact[] => {
@@ -46,6 +46,8 @@ export default function FaxComposer() {
   const [hasCoverPage, setHasCoverPage] = useState(true);
   const [sender, setSender] = useState<string>("");
   const [senderNumber, setSenderNumber] = useState<string>("");
+  const [patientName, setPatientName] = useState<string>("");
+  const [prescriptionDate, setPrescriptionDate] = useState<string>("");
   const [faxContacts, setFaxContacts] = useState<FaxContact[]>([]);
   const [searchValue, setSearchValue] = useState<string>("");
   const [filteredContacts, setFilteredContacts] = useState<FaxContact[]>([]);
@@ -131,6 +133,9 @@ export default function FaxComposer() {
     if (field === "recipientName") setRecipientName(e.currentTarget.value);
     if (field === "recipientNumber") setRecipientNumber(e.currentTarget.value);
     if (field === "content") setContent(e.currentTarget.value);
+    if (field === "patientName") setPatientName(e.currentTarget.value);
+    if (field === "prescriptionDate")
+      setPrescriptionDate(e.currentTarget.value);
   };
 
   const handleReset = (onlyResultingPdf: boolean = false) => {
@@ -153,11 +158,11 @@ export default function FaxComposer() {
         const result = await createPdf({
           coverPage: hasCoverPage
             ? {
-                sender,
-                senderNumber,
                 recipient: recipientName,
                 recipientNumber,
                 content,
+                patientName,
+                prescriptionDate,
               }
             : undefined,
           pdfAttachment: {
@@ -309,6 +314,8 @@ export default function FaxComposer() {
                 sender,
                 senderNumber,
                 recipientName,
+                patientName,
+                prescriptionDate,
                 content,
                 onChange: handleChange,
               }}
