@@ -13,6 +13,7 @@ After sipgate removed the option to prefix a pdf for faxing with additional text
 - display fax document
 - send fax document
 - display fax journal (incoming / outgoing)
+- separate telephone journal (incoming / outgoing + voicemail)
 
 ## howto
 
@@ -66,6 +67,7 @@ Now you'll need to pick a host to deploy it to.
 #### create docker image
 
 - run `docker build -t YOUR_NAME/pdftools .`
+- on Apple Silicon run `docker buildx build --platform linux/amd64 -t YOUR_NAME/pdftools .`
   - `-t` -> tag image with `YOUR_NAME/pdftools` (maintainer/package-name)
 
 #### export the image to registry
