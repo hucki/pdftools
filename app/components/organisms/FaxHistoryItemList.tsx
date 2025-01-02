@@ -44,7 +44,7 @@ export const FaxHistoryItemList = ({ items }: { items: FaxHistoryItem[] }) => {
     return (
       <div
         key={item.id}
-        className="grid grid-cols-3 p-2 border-b border-gray-400 gap-2"
+        className="grid grid-cols-3 p-2 border-b border-gray-400 gap-2 hover:bg-green-50"
       >
         <div className="flex flex-col">
           <span

@@ -14,7 +14,7 @@ export const HistoryItemList = ({ items }: { items: HistoryItem[] }) => {
     return (
       <div
         key={item.id}
-        className="grid grid-cols-2 p-2 border-b border-gray-400 gap-1 bg-white"
+        className="grid grid-cols-2 p-2 border-b border-gray-400 gap-1 bg-white hover:bg-green-50"
       >
         <div className="flex flex-col">
           <span

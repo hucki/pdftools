@@ -32,9 +32,9 @@ export const loader = async (): Promise<HistoryLoaderResult> => {
 };
 export default function History() {
   return (
-    <div>
+    <div className="bg-slate-100">
       <Link to="/fax/composer/client">📠 zum Fax</Link>
-      <div className="grid grid-cols-1 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 m-2">
         <HistoryList type="VOICEMAIL" />
         <HistoryList type="CALL" />
       </div>

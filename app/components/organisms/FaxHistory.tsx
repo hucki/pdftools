@@ -2,6 +2,7 @@ import { useRouteLoaderData } from "@remix-run/react";
 import { LoaderResult } from "../../routes/fax";
 import { FaxHistoryItem } from "../../utils/history";
 import { FaxHistoryItemList } from "./FaxHistoryItemList";
+import { Container } from "../atoms/Container";
 
 export default function FaxHistory() {
   const loaderData = useRouteLoaderData<LoaderResult>("routes/fax");
@@ -13,7 +14,7 @@ export default function FaxHistory() {
   }
 
   return (
-    <div className="p-4 m-4 bg-slate-100 border border-dashed border-spacing-1 ">
+    <Container>
       <h2 className="text-xl font-bold">Fax Ausgang</h2>
       <div className="flex flex-col text-xs">
         <FaxHistoryItemList
@@ -26,6 +27,6 @@ export default function FaxHistory() {
           items={historyItems.filter((item) => item.direction === "INCOMING")}
         />
       </div>
-    </div>
+    </Container>
   );
 }

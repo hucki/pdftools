@@ -64,7 +64,7 @@ export const loader = async (): Promise<LoaderResult> => {
 export default function Fax() {
   const { status } = useLoaderData<LoaderResult>();
   return (
-    <div>
+    <div className="bg-slate-100">
       <div
         className={`fax-status h-2 w-2 rounded-xl ${
           status === "ok" ? "bg-green-500" : "bg-red-500"

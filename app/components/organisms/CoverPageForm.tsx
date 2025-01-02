@@ -1,3 +1,6 @@
+import { Container } from "../atoms/Container";
+import { Label } from "../atoms/Label";
+
 type CoverPageFormProps = {
   sender: string;
   senderNumber: string;
@@ -20,12 +23,19 @@ export const CoverPageForm = ({
   content,
 }: CoverPageFormProps) => {
   return (
-    <div className="p-4 bg-slate-100 border border-dashed border-spacing-1 grid grid-rows-1gap-2">
-      <h2 className="text-xl mb-2">Deckblatt ausfüllen</h2>
-      <p className="text-slate-500">
-        Von: {sender} ({senderNumber} )
-      </p>
-      <label className="text-slate-500">
+    <Container>
+      <h2 className="text-xl mb-2">Deckblatt (VO Korrektur) ausfüllen</h2>
+      <Label>
+        Von:{" "}
+        <input
+          className="border rounded-md p-1 w-full text-black cursor-not-allowed"
+          type="text"
+          name="recipientName"
+          value={`${sender} (${senderNumber})`}
+          disabled={true}
+        />
+      </Label>
+      <Label>
         An (Name):{" "}
         <input
           className="border rounded-md p-1 w-full text-black"
@@ -34,8 +44,8 @@ export const CoverPageForm = ({
           value={recipientName}
           onChange={onChange}
         />
-      </label>
-      <label className="text-slate-500">
+      </Label>
+      <Label>
         Patient:in:{" "}
         <input
           className="border rounded-md p-1 w-full text-black"
@@ -44,8 +54,8 @@ export const CoverPageForm = ({
           value={patientName}
           onChange={onChange}
         />
-      </label>
-      <label className="text-slate-500">
+      </Label>
+      <Label>
         Datum der Verordnung:{" "}
         <input
           className="border rounded-md p-1 w-full text-black"
@@ -54,17 +64,18 @@ export const CoverPageForm = ({
           value={prescriptionDate}
           onChange={onChange}
         />
-      </label>
+      </Label>
 
-      <label className="text-slate-500">
+      <Label>
         Korrekturen:{" "}
         <textarea
           className="border rounded-md p-1 w-full text-black"
           name="content"
+          placeholder="z.B. 'Datum der VO muss sein: xx.xx.xxxx'"
           value={content}
           onChange={onChange}
         />
-      </label>
-    </div>
+      </Label>
+    </Container>
   );
 };
