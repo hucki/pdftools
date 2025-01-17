@@ -9,8 +9,8 @@ import { LoaderResult } from "./fax";
 import { Contact, FaxContact } from "../utils/contacts";
 import FaxHistory from "../components/organisms/FaxHistory";
 import { Container } from "../components/atoms/Container";
-import { Label } from "../components/atoms/Label";
-import { ToggleButton } from "../components/atoms/ToggleButton";
+import { DeleteButton, ToggleButton } from "../components/atoms/Button";
+import { Input } from "../components/atoms/FormElements";
 
 type UploadMetaData = {
   name: string;
@@ -77,8 +77,16 @@ export default function FaxComposer() {
 
   const fileName = today + "_fax-an_" + recipientNumber.replace(" ", "_");
 
+  const initUpload = () => {
+    setUploadedPdf(undefined);
+    setUploadMetaData(undefined);
+    setResultingPDF(undefined);
+    setResultingPDFBase64(undefined);
+  };
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // as maxFiles: 1 we can safely assume there will be only one file
+    initUpload();
     const file = acceptedFiles[0];
     if (file) {
       setUploadMetaData({
@@ -147,9 +155,7 @@ export default function FaxComposer() {
       setRecipientNumber(defaultState.recipientNumber);
       setContent(defaultState.content);
     }
-    setUploadedPdf(undefined);
-    setUploadMetaData(undefined);
-    setResultingPDF(undefined);
+    initUpload();
     setCurrentSendActionKey("");
   };
   const handleCreatePdf = async () => {
@@ -207,14 +213,10 @@ export default function FaxComposer() {
     (fetcher) => fetcher.key === currentSendActionKey
   )?.data as FaxSendResult;
 
+  const coverPageIncomplete =
+    !sender || !recipientName || !content || !patientName || !prescriptionDate;
   const readyCoverPage =
-    !hasCoverPage ||
-    (hasCoverPage &&
-      sender &&
-      recipientName &&
-      content &&
-      patientName &&
-      prescriptionDate);
+    !hasCoverPage || (hasCoverPage && !coverPageIncomplete);
   const readyToCreateFax =
     recipientNumberMatch && uploadedPdf && readyCoverPage;
   const canSendFax =
@@ -237,72 +239,54 @@ export default function FaxComposer() {
   };
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 m-2">
-      <div>
+      <Container>
         <div className="grid grid-rows-1 gap-2">
-          <Container>
-            <h2 className="text-xl">Fax Empfänger</h2>
-            <Label>
-              Suche Faxempfänger:{" "}
-              <input
-                placeholder="🔍 Suchen in Addressbuch"
-                className="border rounded-md p-1 w-full text-black"
-                type="text"
-                name="search"
-                autoComplete="off"
-                onChange={(e) => {
-                  setSearchValue(e.target.value);
-                  setFilteredContacts(
-                    faxContacts.filter((contact) =>
-                      contact.name
-                        .toLowerCase()
-                        .includes(searchValue.toLowerCase())
-                    )
-                  );
-                  if (searchValue === "") {
-                    setFilteredContacts([]);
-                  }
-                }}
-              />
-              {filteredContacts.length > 0 && searchValue !== "" && (
-                <div className="relative">
-                  <div className="absolute z-5 bg-white border border-gray-300 rounded-md mt-2 w-full grid grid-cols-1">
-                    {filteredContacts.map((contact) => (
-                      <button
-                        key={contact.id}
-                        className="p-2 cursor-pointer hover:bg-gray-100 text-start"
-                        onKeyDown={() => handleSelectFaxContact(contact)}
-                        onClick={() => handleSelectFaxContact(contact)}
-                      >
-                        {contact.familyName}, {contact.givenName} -{" "}
-                        {contact.number}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <span> (oder unten manuell eingeben)</span>
-            </Label>
-            <Label>
-              An (<span className="font-bold">Faxnummer</span>):{" "}
-              <input
-                placeholder="+492931...."
-                className="border rounded-md p-1 mb-1 w-full text-black"
-                type="tel"
-                required
-                title="Faxnummer im Format +49293112345"
-                pattern="^\+[1-9]\d{1,14}$"
-                name="recipientNumber"
-                value={recipientNumber}
-                onChange={handleChange}
-              />
-              {!recipientNumberMatch && (
-                <span className="text-red-500 italic text-xs">
-                  Bitte Faxnummer im internationalen Format
-                  &quot;+49293112345&quot; angeben
-                </span>
-              )}
-            </Label>
-          </Container>
+          <h2 className="text-xl font-semibold text-gray-800">Fax Empfänger</h2>
+          <Input
+            label="Suche"
+            placeholder="🔍 in Addressbuch suchen oder unten manuell eingeben"
+            name="search"
+            autoComplete="off"
+            value={searchValue}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              setFilteredContacts(
+                faxContacts.filter((contact) =>
+                  contact.name.toLowerCase().includes(searchValue.toLowerCase())
+                )
+              );
+              if (searchValue === "") {
+                setFilteredContacts([]);
+              }
+            }}
+          />
+          {filteredContacts.length > 0 && searchValue !== "" && (
+            <div className="relative">
+              <div className="absolute z-50 bg-white border border-blue-500 rounded-md mt-2 w-full grid grid-cols-1">
+                {filteredContacts.map((contact) => (
+                  <button
+                    key={contact.id}
+                    className="p-2 cursor-pointer hover:bg-gray-100 text-start"
+                    onKeyDown={() => handleSelectFaxContact(contact)}
+                    onClick={() => handleSelectFaxContact(contact)}
+                  >
+                    {contact.familyName}, {contact.givenName} - {contact.number}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <Input
+            label="Faxnummer"
+            placeholder="Faxnummer im Format +49293112345"
+            type="tel"
+            required
+            title="Faxnummer im Format +49293112345"
+            pattern="^\+[1-9]\d{1,14}$"
+            name="recipientNumber"
+            value={recipientNumber}
+            onChange={handleChange}
+          />
 
           {hasCoverPage && (
             <CoverPageForm
@@ -314,29 +298,38 @@ export default function FaxComposer() {
                 prescriptionDate,
                 content,
                 onChange: handleChange,
+                onRemove: () => setHasCoverPage(false),
               }}
             />
           )}
           {/* add a toggle for the CoverPage */}
-          <ToggleButton
-            label={`Deckblatt (VO Korrektur) ${
-              hasCoverPage ? "entfernen" : "hinzufügen"
-            }`}
-            value={!hasCoverPage}
-            onChange={() => {
-              if (resultingPdfUrl) handleReset(true);
-              setHasCoverPage(!hasCoverPage);
-            }}
-          />
+          {!hasCoverPage && (
+            <ToggleButton
+              label="⊕ Deckblatt (VO Korrektur) hinzufügen"
+              value={!hasCoverPage}
+              onChange={() => {
+                if (resultingPdfUrl) handleReset(true);
+                setHasCoverPage(!hasCoverPage);
+              }}
+            />
+          )}
           {resultingPdfUrl && (
             <span className="text-red-500 p-1 italic text-sm">
               <i> (Formular wir zurückgesetzt)</i>
             </span>
           )}
-          <Container>
-            <h2 className="text-xl">zu faxendes Dokument hochladen</h2>
+          <Container
+            bg="bg-green-100"
+            rounded="rounded-lg"
+            shadow="shadow-inner"
+            className="border border-green-300"
+          >
+            <p className="text-sm text-gray-700">
+              Bitte das zu faxende PDF hier ablegen, oder klicken um ein PDF
+              auszuwählen
+            </p>
             <div
-              className="p-4 bg-lime-100 rounded-md border-spacing-1 cursor-copy shadow-inner"
+              className="mt-4 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer"
               {...getRootProps()}
             >
               <input {...getInputProps()} />
@@ -346,23 +339,18 @@ export default function FaxComposer() {
                 </p>
               ) : (
                 <p className="text-slate-500">
-                  ⊕ Bitte das zu faxende PDF hier ablegen, oder klicken um ein
-                  PDF auszuwählen
+                  ⊕ Drag & Drop oder Datei auswählen
                 </p>
               )}
             </div>
             {uploadMetaData && (
-              <div className="p-4 bg-slate-50 rounded-md border-spacing-1 shadow-inner">
-                <p>
-                  📄 <b>{uploadMetaData?.name}</b>
-                  <button
-                    aria-label="reset"
-                    onClick={() => handleReset()}
-                    className="p-1 m-1 cursor-pointer"
-                  >
-                    ❌
-                  </button>
-                  <div className="text-xs font-mono italic">
+              <div className="p-4 bg-yellow-100 rounded-md border-spacing-1 shadow-inner">
+                <p className="text-xs font-mono italic">
+                  <div className="flex justify-between items-center">
+                    <b>📄 {uploadMetaData?.name}</b>
+                    <DeleteButton handleDelete={handleReset} />
+                  </div>
+                  <div>
                     ({uploadMetaData?.lastModifiedDate.toLocaleString()} -{" "}
                     {uploadMetaData?.size} byte)
                   </div>
@@ -370,108 +358,54 @@ export default function FaxComposer() {
               </div>
             )}
           </Container>
-          <Container>
-            <h2 className="text-xl">Fax erzeugen</h2>
-            <button
-              disabled={!!resultingPdfUrl || !readyToCreateFax}
-              onClick={handleCreatePdf}
-              className={`rounded-md p-2 m-2 ${
-                !!resultingPdfUrl || !readyToCreateFax
-                  ? "bg-orange-100 text-slate-500 cursor-not-allowed"
-                  : "bg-orange-400 text-slate-950 cursor-pointer"
-              }`}
-            >
-              🛠️ FAX erzeugen
-            </button>
-            {!readyToCreateFax && (
+          {!readyToCreateFax && (
+            <>
+              <h2 className="text-xl font-semibold text-gray-800">
+                🚨 Zum Fortfahren bitte prüfen:
+              </h2>
               <ul className="text-red-500 p-1 italic text-xs">
                 {!recipientNumberMatch && (
                   <li>
-                    ‼️ Bitte Faxnummer im internationalen Format
+                    -&gt; Bitte Faxnummer im internationalen Format
                     &quot;+49293112345&quot; angeben
                   </li>
                 )}
-                {!uploadedPdf && <li>‼️ Bitte PDF-Dokument hochladen</li>}
-                {hasCoverPage && (
+                {!uploadedPdf && <li>-&gt; Bitte PDF-Dokument hochladen</li>}
+                {hasCoverPage && coverPageIncomplete && (
                   <>
-                    <li>Deckblatt (VO Korrektur) unvollständig:</li>
                     {!recipientName && (
-                      <li>‼️ Bitte Name Empfänger:in angeben</li>
+                      <li>
+                        -&gt; Deckblatt (VO Korrektur): Name Empfänger:in fehlt
+                      </li>
                     )}
-                    {!patientName && <li>‼️ Bitte Name Patient:in angeben</li>}
-                    {!prescriptionDate && <li>‼️ Bitte VO Datum angeben</li>}
-                    {!content && <li>‼️ Bitte VO Korrekturen angeben</li>}
+                    {!patientName && (
+                      <li>
+                        -&gt; Deckblatt (VO Korrektur): Name Patient:in fehlt
+                      </li>
+                    )}
+                    {!prescriptionDate && (
+                      <li>-&gt; Deckblatt (VO Korrektur): VO Datum fehlt</li>
+                    )}
+                    {!content && (
+                      <li>
+                        -&gt; Deckblatt (VO Korrektur): VO Korrekturen fehlen
+                      </li>
+                    )}
                   </>
                 )}
               </ul>
-            )}
-            {resultingPdfUrl && (
-              <>
-                <div className="file p-4 mx-2 bg-slate-50 rounded-md border-spacing-1 shadow-inner text-sm relative">
-                  <p>
-                    <div>Fax fertig: </div>
-                    📄<b>{fileName + ".pdf"}</b>
-                    <div className="text-xs font-mono italic">
-                      (s. Vorschau)
-                    </div>
-                    <a
-                      href={resultingPdfUrl}
-                      download={fileName + ".pdf"}
-                      className="rounded-md p-2 m-2 bg-sky-200 text-slate-950 cursor-pointer text-center absolute right-0 bottom-0"
-                    >
-                      💾⬇️
-                    </a>
-                  </p>
-                </div>
-              </>
-            )}
-          </Container>
-          {canSendFax && (
-            <Container>
-              <h2 className="text-xl">Fax versenden</h2>
-              <Form method="POST" action="/fax/send" navigate={false}>
-                <input
-                  type="hidden"
-                  name="recipientName"
-                  value={recipientName}
-                />
-                <input
-                  type="hidden"
-                  name="recipientNumber"
-                  value={recipientNumber}
-                />
-                <input
-                  type="hidden"
-                  name="fileName"
-                  value={fileName + ".pdf"}
-                />
-                <input type="hidden" name="pdf" value={resultingPDFBase64} />
-                <button
-                  // disabled={!!currentSendActionResult}
-                  className={`rounded-md p-2 m-2 ${
-                    currentSendActionResult
-                      ? "bg-gray-200 text-slate-500 italic cursor-not-allowed"
-                      : "bg-teal-500 text-slate-950 cursor-pointer"
-                  }  text-center`}
-                  type="submit"
-                >
-                  📨 erzeugtes Fax versenden
-                </button>
-              </Form>
-              {currentSendActionResult?.result && (
-                <div
-                  className={`p-4 border file font-mono text-xs ${
-                    currentSendActionResult.result === "success"
-                      ? "bg-green-100 border border-green-500"
-                      : "bg-red-100 border border-red-500"
-                  } `}
-                >
-                  {currentSendActionResult.result === "success" ? "✅ " : "❌ "}
-                  {currentSendActionResult.message}
-                </div>
-              )}
-            </Container>
+            </>
           )}
+          {readyToCreateFax && !resultingPDF && (
+            <button
+              disabled={!!resultingPdfUrl || !readyToCreateFax}
+              onClick={handleCreatePdf}
+              className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+            >
+              🛠️ Fax vorbereiten
+            </button>
+          )}
+
           {resultingPdfUrl && (
             <button
               onClick={() => handleReset()}
@@ -481,18 +415,66 @@ export default function FaxComposer() {
             </button>
           )}
         </div>
-      </div>
+      </Container>
       <Container>
-        <h2 className="text-xl">Vorschau </h2>
+        {canSendFax && (
+          <>
+            <Form method="POST" action="/fax/send" navigate={false}>
+              <input type="hidden" name="recipientName" value={recipientName} />
+              <input
+                type="hidden"
+                name="recipientNumber"
+                value={recipientNumber}
+              />
+              <input type="hidden" name="fileName" value={fileName + ".pdf"} />
+              <input type="hidden" name="pdf" value={resultingPDFBase64} />
+              <button
+                // disabled={!!currentSendActionResult}
+                className={`rounded-md p-2 m-2 w-full ${
+                  currentSendActionResult
+                    ? "bg-gray-200 text-slate-500 italic cursor-not-allowed"
+                    : "bg-teal-500 text-slate-950 cursor-pointer"
+                }  text-center`}
+                type="submit"
+              >
+                📠 Fax versenden
+              </button>
+            </Form>
+            {currentSendActionResult?.result && (
+              <div
+                className={`p-4 border file font-mono text-xs ${
+                  currentSendActionResult.result === "success"
+                    ? "bg-green-100 border border-green-500"
+                    : "bg-red-100 border border-red-500"
+                } `}
+              >
+                {currentSendActionResult.result === "success" ? "✅ " : "❌ "}
+                {currentSendActionResult.message}
+              </div>
+            )}
+          </>
+        )}
         {!resultingPdfUrl && (
-          <h3>(erscheint hier sobald das Fax erzeugt wurde)</h3>
+          <>
+            <h2 className="text-xl font-semibold text-gray-800">Vorschau </h2>
+            <h3>(erscheint hier sobald das Fax erzeugt wurde)</h3>
+          </>
         )}
         {resultingPdfUrl && (
-          <embed
-            className="m-4 w-11/12 h-3/4"
-            src={resultingPdfUrl}
-            type="application/pdf"
-          ></embed>
+          <>
+            <a
+              href={resultingPdfUrl}
+              download={fileName + ".pdf"}
+              className="rounded-md  text-xs font-mono italic text-slate-950 hover:underline cursor-pointer text-center"
+            >
+              📄<b>{fileName + ".pdf"}</b>
+            </a>
+            <embed
+              className="m-4 w-11/12 h-1/2"
+              src={resultingPdfUrl}
+              type="application/pdf"
+            ></embed>
+          </>
         )}
       </Container>
       <FaxHistory />

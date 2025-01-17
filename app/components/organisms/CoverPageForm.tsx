@@ -1,5 +1,6 @@
+import { DeleteButton } from "../atoms/Button";
 import { Container } from "../atoms/Container";
-import { Label } from "../atoms/Label";
+import { Input, Label } from "../atoms/FormElements";
 
 type CoverPageFormProps = {
   sender: string;
@@ -10,6 +11,7 @@ type CoverPageFormProps = {
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
+  onRemove: () => void;
   content: string;
 };
 
@@ -20,51 +22,45 @@ export const CoverPageForm = ({
   prescriptionDate,
   recipientName,
   onChange,
+  onRemove,
   content,
 }: CoverPageFormProps) => {
   return (
-    <Container>
-      <h2 className="text-xl mb-2">Deckblatt (VO Korrektur) ausfüllen</h2>
-      <Label>
-        Von:{" "}
-        <input
-          className="border rounded-md p-1 w-full text-black cursor-not-allowed"
-          type="text"
-          name="recipientName"
-          value={`${sender} (${senderNumber})`}
-          disabled={true}
-        />
-      </Label>
-      <Label>
-        An (Name):{" "}
-        <input
-          className="border rounded-md p-1 w-full text-black"
-          type="text"
-          name="recipientName"
-          value={recipientName}
-          onChange={onChange}
-        />
-      </Label>
-      <Label>
-        Patient:in:{" "}
-        <input
-          className="border rounded-md p-1 w-full text-black"
-          type="text"
-          name="patientName"
-          value={patientName}
-          onChange={onChange}
-        />
-      </Label>
-      <Label>
-        Datum der Verordnung:{" "}
-        <input
-          className="border rounded-md p-1 w-full text-black"
-          type="text"
-          name="prescriptionDate"
-          value={prescriptionDate}
-          onChange={onChange}
-        />
-      </Label>
+    <Container className="relative" bg="bg-gray-50" shadow="shadow-inner">
+      <DeleteButton
+        handleDelete={onRemove}
+        className="top-2 right-2 absolute"
+      />
+      <h2 className="text-xl font-semibold text-gray-800 mb-2">
+        Deckblatt (VO Korrektur) ausfüllen{" "}
+      </h2>
+      <Input
+        label="Von:"
+        name="recipientName"
+        value={`${sender} (${senderNumber})`}
+        onChange={() => undefined}
+        disabled={true}
+      />
+
+      <Input
+        label="An (Name):"
+        name="recipientName"
+        value={recipientName}
+        onChange={onChange}
+      />
+      <Input
+        label="Patient:"
+        name="patientName"
+        value={patientName}
+        onChange={onChange}
+      />
+
+      <Input
+        label="Datum der Verordnung:"
+        name="prescriptionDate"
+        value={prescriptionDate}
+        onChange={onChange}
+      />
 
       <Label>
         Korrekturen:{" "}
