@@ -11,11 +11,14 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
+    <div
+      style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}
+      className="h-full"
+    >
       <h1 className="m-2">Mundwerk PDF Tools</h1>
       <Outlet />
       <Link to="./fax/composer/client">📠 zum Fax</Link>
-      <Link to="./fax/composer/client">📞 zur Anrufliste</Link>
+      <Link to="./history">📞 zur Anrufliste</Link>
     </div>
   );
 }
