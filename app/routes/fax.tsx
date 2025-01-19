@@ -2,7 +2,6 @@ import { Outlet, useLoaderData } from "@remix-run/react";
 import { Contact, fetchContacts } from "../utils/contacts";
 import { FaxHistoryResult, fetchHistory } from "../utils/history";
 import { fetchCallerid, fetchTagline } from "../utils/faxlines";
-import { Link } from "../components/atoms/Link";
 
 export type LoaderResult = {
   status: string;
@@ -64,13 +63,12 @@ export const loader = async (): Promise<LoaderResult> => {
 export default function Fax() {
   const { status } = useLoaderData<LoaderResult>();
   return (
-    <div className="bg-slate-100">
+    <div className="bg-slate-100 h-full">
       <div
         className={`fax-status h-2 w-2 rounded-xl ${
           status === "ok" ? "bg-green-500" : "bg-red-500"
         } fixed`}
       />
-      <Link to="/history">📞 zur Anrufliste</Link>
       <Outlet />
     </div>
   );
