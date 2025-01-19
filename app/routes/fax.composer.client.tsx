@@ -244,7 +244,7 @@ export default function FaxComposer() {
     setSearchValue("");
   };
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 m-2 h-full">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 p-2 h-full">
       <Container className="max-h-full overflow-y-auto">
         <div className="grid grid-rows-1 gap-2">
           <h2 className="text-xl font-semibold text-gray-800">Fax Empfänger</h2>
@@ -373,33 +373,27 @@ export default function FaxComposer() {
               <h2 className="text-xl font-semibold text-gray-800">
                 Zum Fortfahren bitte prüfen:
               </h2>
-              <ul className="text-red-500 font-bold p-1 text-xs">
+              <ul className="text-red-500 font-mono p-1 text-xs list-disc list-inside">
                 {!recipientNumberMatch && (
                   <li>
-                    -&gt; Bitte Faxnummer im internationalen Format
+                    Bitte Faxnummer im internationalen Format
                     &quot;+49293112345&quot; angeben
                   </li>
                 )}
-                {!uploadedPdf && <li>-&gt; Bitte PDF-Dokument hochladen</li>}
+                {!uploadedPdf && <li>Bitte PDF-Dokument hochladen</li>}
                 {hasCoverPage && coverPageIncomplete && (
                   <>
                     {!recipientName && (
-                      <li>
-                        -&gt; Deckblatt (VO Korrektur): Name Empfänger:in fehlt
-                      </li>
+                      <li>Deckblatt (VO Korrektur): Name Empfänger:in fehlt</li>
                     )}
                     {!patientName && (
-                      <li>
-                        -&gt; Deckblatt (VO Korrektur): Name Patient:in fehlt
-                      </li>
+                      <li>Deckblatt (VO Korrektur): Name Patient:in fehlt</li>
                     )}
                     {!prescriptionDate && (
-                      <li>-&gt; Deckblatt (VO Korrektur): Datum fehlt</li>
+                      <li>Deckblatt (VO Korrektur): Datum fehlt</li>
                     )}
                     {!content && (
-                      <li>
-                        -&gt; Deckblatt (VO Korrektur): Korrekturen fehlen
-                      </li>
+                      <li>Deckblatt (VO Korrektur): Korrekturen fehlen</li>
                     )}
                   </>
                 )}
