@@ -1,29 +1,60 @@
+import {
+  DocumentCheckIcon,
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+  PaperAirplaneIcon,
+} from "@heroicons/react/16/solid";
 import { FaxHistoryItem } from "../../utils/history";
 
 type FaxStatusType = "FAILED" | "SENT" | "SENDING" | "PENDING";
 type FaxStatusItem = {
   text: string;
   color: string;
+  icon: JSX.Element;
 };
 type FaxStatus = {
   [key in FaxStatusType]: FaxStatusItem;
 };
 const faxStatus: FaxStatus = {
   FAILED: {
-    text: "❌ fehlgeschlagen",
+    text: " fehlgeschlagen",
     color: "text-red-500",
+    icon: (
+      <ExclamationTriangleIcon
+        className="h-4 w-4 text-red-500"
+        aria-hidden="true"
+      />
+    ),
   },
   SENT: {
-    text: "🟩 gesendet",
+    text: " gesendet",
     color: "text-green-500",
+    icon: (
+      <DocumentCheckIcon
+        className="h-4 w-4 text-green-500"
+        aria-hidden="true"
+      />
+    ),
   },
   SENDING: {
-    text: "🟧 wird gesendet",
+    text: " wird gesendet",
     color: "text-orange-500",
+    icon: (
+      <PaperAirplaneIcon
+        className="h-4 w-4 text-orange-500"
+        aria-hidden="true"
+      />
+    ),
   },
   PENDING: {
-    text: "🟦 wartet",
+    text: " wartet",
     color: "text-blue-500",
+    icon: (
+      <ExclamationCircleIcon
+        className="h-4 w-4 text-blue-500"
+        aria-hidden="true"
+      />
+    ),
   },
 };
 
@@ -32,6 +63,7 @@ export const FaxHistoryItemList = ({ items }: { items: FaxHistoryItem[] }) => {
     const faxStatusType = item.faxStatusType as FaxStatusType | undefined;
     const faxStatusText = faxStatusType ? faxStatus[faxStatusType].text : "";
     const faxStatusColor = faxStatusType ? faxStatus[faxStatusType].color : "";
+    const faxStatusIcon = faxStatusType ? faxStatus[faxStatusType].icon : null;
     const isItemFromToday = (item: FaxHistoryItem) => {
       const today = new Date();
       const itemDate = new Date(item.lastModified);
@@ -52,7 +84,12 @@ export const FaxHistoryItemList = ({ items }: { items: FaxHistoryItem[] }) => {
           >
             {new Date(item.lastModified).toLocaleString("de-DE")}
           </span>
-          <span className={`font-bold ${faxStatusColor}`}>{faxStatusText}</span>
+          <span
+            className={`font-bold grid grid-cols-[1fr_3fr] items-center ${faxStatusColor}`}
+          >
+            {faxStatusIcon}
+            {faxStatusText}
+          </span>
         </div>
         <div className="flex flex-col">
           {item.direction === "INCOMING" && (
