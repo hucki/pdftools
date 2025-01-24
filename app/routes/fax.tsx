@@ -1,7 +1,8 @@
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { Contact, fetchContacts } from "../utils/contacts";
 import { FaxHistoryResult, fetchHistory } from "../utils/history";
 import { fetchCallerid, fetchTagline } from "../utils/faxlines";
+import { Navigation } from "../components/organisms/Navigation";
 
 export type LoaderResult = {
   status: string;
@@ -61,15 +62,12 @@ export const loader = async (): Promise<LoaderResult> => {
 };
 
 export default function Fax() {
-  const { status } = useLoaderData<LoaderResult>();
   return (
-    <div className="bg-slate-100 h-full">
-      <div
-        className={`fax-status h-2 w-2 rounded-xl ${
-          status === "ok" ? "bg-green-500" : "bg-red-500"
-        } fixed`}
-      />
-      <Outlet />
+    <div className="flex h-full">
+      <Navigation />
+      <div className="bg-slate-100 h-full w-11/12">
+        <Outlet />
+      </div>
     </div>
   );
 }
