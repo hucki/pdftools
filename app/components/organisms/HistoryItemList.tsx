@@ -1,4 +1,5 @@
 import { HistoryItem } from "../../utils/history";
+import { AudioPlayer } from "../molecules/AudioPlayer";
 
 export const HistoryItemList = ({ items }: { items: HistoryItem[] }) => {
   return items.map((item) => {
@@ -14,7 +15,7 @@ export const HistoryItemList = ({ items }: { items: HistoryItem[] }) => {
     return (
       <div
         key={item.id}
-        className="grid grid-cols-2 p-2 border-b border-gray-400 gap-1 bg-white hover:bg-green-50"
+        className="grid grid-cols-2 p-2 border-b border-gray-400 gap-1 bg-white hover:bg-green-50 h-full"
       >
         <div className="flex flex-col">
           <span
@@ -37,12 +38,8 @@ export const HistoryItemList = ({ items }: { items: HistoryItem[] }) => {
             </span>
           )}
         </div>
-        {item.type === "VOICEMAIL" && (
-          <audio controls className="col-span-2">
-            <track kind="captions" />
-            <source src={item.recordingUrl} type="audio/mpeg" />
-            Your browser does not support the audio element.
-          </audio>
+        {item.type === "VOICEMAIL" && item.recordingUrl && (
+          <AudioPlayer src={item.recordingUrl} />
         )}
       </div>
     );

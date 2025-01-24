@@ -33,9 +33,9 @@ export default function HistoryList({ type }: { type: HistoryItemType }) {
     type === "CALL" ? "Anruf" : type === "VOICEMAIL" ? "VOICEMAIL" : "Fax";
 
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-2 p-2 h-full overflow-y-auto">
       {type !== "VOICEMAIL" && (
-        <Container>
+        <Container className="max-h-full overflow-y-auto">
           <h2 className="text-xl font-bold">❌ {typeLabel} verpasst</h2>
           <div className="flex flex-col text-xs">
             <HistoryItemList
@@ -46,7 +46,7 @@ export default function HistoryList({ type }: { type: HistoryItemType }) {
           </div>
         </Container>
       )}
-      <Container>
+      <Container className="max-h-full overflow-y-auto">
         <h2 className="text-xl font-bold mt-4">{typeLabel} Eingang</h2>
         <div className="flex flex-col text-xs">
           <HistoryItemList
