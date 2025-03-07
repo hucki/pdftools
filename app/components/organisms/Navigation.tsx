@@ -2,14 +2,18 @@ import { useLoaderData } from "@remix-run/react";
 import { Link } from "../atoms/Link";
 import { LoaderResult } from "../../routes/fax";
 import { DocumentIcon, PhoneIcon } from "@heroicons/react/16/solid";
+import { Logo } from "../atoms/Logo";
 
 export const Navigation = () => {
   const status = useLoaderData<LoaderResult>()?.status;
   return (
-    <aside className="flex flex-col h-full w-1/12 bg-slate-400">
+    <aside className="flex flex-col h-full w-1/12 bg-slate-300">
       <div className="flex flex-col p-2">
         <div className="flex flex-col mt-4">
-          <span className="text-white text-xs font-mono text-center text-nowrap justify-center">
+          <div className="flex flex-col items-center mb-2">
+            <Logo size={42} />
+          </div>
+          <span className="text-slate-900 text-sm font-bold font-mono text-center text-nowrap justify-center">
             Menu
           </span>
           {status ? (
