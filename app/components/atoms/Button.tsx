@@ -105,7 +105,7 @@ export const ToggleButton = ({ label, value, onChange }: ToggleButtonProps) => {
     <TactileButton
       onClick={() => onChange(!value)}
       label={label}
-      color="green"
+      color="gray"
     />
   );
 };

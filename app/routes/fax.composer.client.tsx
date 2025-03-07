@@ -311,7 +311,7 @@ export default function FaxComposer() {
           {/* add a toggle for the CoverPage */}
           {!hasCoverPage && (
             <ToggleButton
-              label="⊕ Deckblatt (VO Korrektur) hinzufügen"
+              label="⊕ Deckblatt hinzufügen"
               value={!hasCoverPage}
               onChange={() => {
                 if (resultingPdfUrl) handleReset(true);
@@ -405,7 +405,7 @@ export default function FaxComposer() {
               label="🛠️ Fax vorbereiten"
               onClick={handleCreatePdf}
               disabled={!!resultingPdfUrl || !readyToCreateFax}
-              color="orange"
+              color="gray"
             />
           )}
 
@@ -413,7 +413,7 @@ export default function FaxComposer() {
             <TactileButton
               label="  ♻️ alles zurücksetzen"
               onClick={() => handleReset()}
-              color="red"
+              color="gray"
             />
           )}
         </div>

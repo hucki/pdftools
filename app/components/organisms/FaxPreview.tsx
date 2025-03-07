@@ -26,7 +26,7 @@ export const FaxPreview = ({
 }: FaxPreviewProps) => {
   return (
     <Container className="h-full overflow-y-auto">
-      <div className="h-full">
+      <div className="h-fit">
         {canSendFax && (
           <>
             <Form method="POST" action="/fax/send" navigate={false}>
@@ -38,7 +38,11 @@ export const FaxPreview = ({
               />
               <input type="hidden" name="fileName" value={fileName + ".pdf"} />
               <input type="hidden" name="pdf" value={resultingPDFBase64} />
-              <TactileButton label="📠 Fax versenden" type="submit" />
+              <TactileButton
+                label="📠 Fax versenden"
+                type="submit"
+                color="green"
+              />
             </Form>
             {currentSendActionResult?.result && (
               <div
@@ -72,7 +76,7 @@ export const FaxPreview = ({
               📄<b>{fileName + ".pdf"}</b>
             </a>
             <embed
-              className="m-4 w-11/12 h-96"
+              className="h-96 w-full"
               src={resultingPdfUrl}
               type="application/pdf"
             ></embed>
