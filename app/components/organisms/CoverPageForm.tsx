@@ -32,8 +32,9 @@ export const CoverPageForm = ({
         className="top-2 right-2 absolute"
       />
       <h2 className="text-xl font-semibold text-gray-800 mb-2">
-        Deckblatt (VO Korrektur) ausfüllen{" "}
+        Deckblatt ausfüllen{" "}
       </h2>
+      <h3 className="italic">&quot;Korrektur der Verordnung notwendig&quot;</h3>
       <Input
         label="Von:"
         name="recipientName"
