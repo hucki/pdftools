@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 
-const { BASE_URL, TOKEN_ID, TOKEN } = process.env;
+const { BASE_URL, HISTORY_TOKEN_ID, HISTORY_TOKEN } = process.env;
 
 export type HistoryItemType = "CALL" | "VOICEMAIL" | "SMS" | "FAX";
 
@@ -84,15 +84,21 @@ export type FaxHistoryResult = {
 
 type FetchHistoryProps = {
   type: "CALL" | "VOICEMAIL" | "SMS" | "FAX";
+  direction?: "INCOMING" | "OUTGOING" | "MISSED_INCOMING";
+  archived?: boolean;
   baseURL?: string;
   token?: string;
   tokenId?: string;
 };
 
-export const fetchHistory = async ({ type }: FetchHistoryProps) => {
+export const fetchHistory = async ({
+  type,
+  direction = "INCOMING",
+  archived = false,
+}: FetchHistoryProps) => {
   try {
     const historyResponse = await axios(
-      `/history?types=${type}&offset=0&limit=20&archived=false`,
+      `/history?types=${type}&offset=0&limit=20&archived=${archived}&direction=${direction}`,
       {
         baseURL: BASE_URL,
         method: "GET",
@@ -101,11 +107,12 @@ export const fetchHistory = async ({ type }: FetchHistoryProps) => {
           "Content-Type": "application/json",
         },
         auth: {
-          username: TOKEN_ID || "",
-          password: TOKEN || "",
+          username: HISTORY_TOKEN_ID || "",
+          password: HISTORY_TOKEN || "",
         },
       }
     );
+
     return {
       data: historyResponse.data,
     };
