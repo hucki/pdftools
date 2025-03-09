@@ -3,8 +3,11 @@ import { HistoryItem, HistoryItemType } from "../../utils/history";
 import { HistoryItemList } from "./HistoryItemList";
 import { HistoryLoaderResult } from "../../routes/history";
 import { Container } from "../atoms/Container";
+import { ToggleButton } from "../atoms/Button";
+import { useState } from "react";
 
 export default function HistoryList({ type }: { type: HistoryItemType }) {
+  const [isArchive, setIsArchive] = useState(false);
   const loaderData = useRouteLoaderData<HistoryLoaderResult>("routes/history");
   const calls = loaderData?.calls
     ? (loaderData?.calls as unknown as HistoryItem[])
@@ -26,6 +29,14 @@ export default function HistoryList({ type }: { type: HistoryItemType }) {
     : [];
 
   const historyItems = type === "CALL" ? calls : voicemails;
+  const filteredHistoryItems = {
+    incoming: historyItems.filter(
+      (item) =>
+        item.archived !== true &&
+        (item.direction === "INCOMING" || item.direction === "MISSED_INCOMING")
+    ),
+    archived: historyItems.filter((item) => item.archived === true),
+  };
   if (!historyItems?.length) {
     return <div>No history items found</div>;
   }
@@ -35,7 +46,10 @@ export default function HistoryList({ type }: { type: HistoryItemType }) {
   return (
     <div className="grid gap-2 p-2 h-full overflow-y-auto">
       {type !== "VOICEMAIL" && (
-        <Container className="max-h-full overflow-y-auto">
+        <Container
+          className="max-h-full overflow-y-auto"
+          bg={isArchive ? "bg-yellow-100" : undefined}
+        >
           <h2 className="text-xl font-bold">❌ {typeLabel} verpasst</h2>
           <div className="flex flex-col text-xs">
             <HistoryItemList
@@ -46,16 +60,28 @@ export default function HistoryList({ type }: { type: HistoryItemType }) {
           </div>
         </Container>
       )}
-      <Container className="max-h-full overflow-y-auto">
-        <h2 className="text-xl font-bold mt-4">{typeLabel} Eingang</h2>
+      <Container
+        className="max-h-full overflow-y-auto"
+        bg={isArchive ? "bg-yellow-100" : undefined}
+      >
+        <h2 className="text-xl font-bold mt-4">
+          {typeLabel} {isArchive ? "Archiv" : "Eingang"}
+        </h2>
+        <ToggleButton
+          label={isArchive ? "Eingang ansehen" : "Archiv ansehen"}
+          value={isArchive}
+          onChange={() => setIsArchive(!isArchive)}
+        />
         <div className="flex flex-col text-xs">
           <HistoryItemList
-            items={historyItems.filter((item) => item.direction === "INCOMING")}
+            items={filteredHistoryItems[
+              isArchive ? "archived" : "incoming"
+            ].filter((item) => item.direction === "INCOMING")}
           />
         </div>
       </Container>
       {type !== "VOICEMAIL" && (
-        <Container>
+        <Container bg={isArchive ? "bg-yellow-100" : undefined}>
           <h2 className="text-xl font-bold mt-4">{typeLabel} Ausgang</h2>
           <div className="flex flex-col text-xs">
             <HistoryItemList

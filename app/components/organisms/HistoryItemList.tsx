@@ -1,3 +1,8 @@
+import {
+  ArchiveBoxIcon,
+  DocumentCheckIcon,
+  StarIcon,
+} from "@heroicons/react/16/solid";
 import { HistoryItem } from "../../utils/history";
 import { AudioPlayer } from "../molecules/AudioPlayer";
 
@@ -41,6 +46,23 @@ export const HistoryItemList = ({ items }: { items: HistoryItem[] }) => {
         {item.type === "VOICEMAIL" && item.recordingUrl && (
           <AudioPlayer src={item.recordingUrl} />
         )}
+        <div className="flex items-center">
+          {item.read === true ? (
+            <DocumentCheckIcon className="h-5 w-5 text-green-600" />
+          ) : (
+            <DocumentCheckIcon className="h-5 w-5 text-gray-500" />
+          )}
+          {item.archived === true ? (
+            <ArchiveBoxIcon className="h-5 w-5 text-green-600" />
+          ) : (
+            <ArchiveBoxIcon className="h-5 w-5 text-gray-500" />
+          )}
+          {item.starred === true ? (
+            <StarIcon className="h-5 w-5 text-orange-300" />
+          ) : (
+            <StarIcon className="h-5 w-5 text-gray-500" />
+          )}
+        </div>
       </div>
     );
   });
