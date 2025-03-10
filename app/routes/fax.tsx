@@ -64,8 +64,9 @@ export const loader = async (): Promise<LoaderResult> => {
 export default function Fax() {
   return (
     <div className="flex h-full">
-      <Navigation />
-      <div className="bg-slate-100 h-full w-11/12">
+      <Navigation width="w-2/12 md:w-1/12" />
+
+      <div className="bg-slate-100 h-full w-10/12 md:w-11/12">
         <Outlet />
       </div>
     </div>
