@@ -91,6 +91,52 @@ type FetchHistoryProps = {
   tokenId?: string;
 };
 
+export type HistoryLoaderResult = {
+  callsIncoming: { items: HistoryItem[] };
+  callsMissed: { items: HistoryItem[] };
+  callsOutgoing: { items: HistoryItem[] };
+  voicemails: { items: HistoryItem[] };
+};
+
+export type HistoryLoaderProps = {
+  archived: boolean;
+};
+
+export const getHistoryLoader = ({ archived = false }: HistoryLoaderProps) => {
+  return async (): Promise<HistoryLoaderResult> => {
+    const [callsIncoming, callsMissed, callsOutgoing, voicemails] =
+      await Promise.all([
+        fetchHistoryWrapper({
+          type: "CALL",
+          direction: "INCOMING",
+          archived: archived,
+        }),
+        fetchHistoryWrapper({
+          type: "CALL",
+          direction: "MISSED_INCOMING",
+          archived: archived,
+        }),
+        fetchHistoryWrapper({
+          type: "CALL",
+          direction: "OUTGOING",
+          archived: archived,
+        }),
+        fetchHistoryWrapper({
+          type: "VOICEMAIL",
+          direction: "INCOMING",
+          archived: archived,
+        }),
+      ]);
+
+    return {
+      callsIncoming,
+      callsOutgoing,
+      callsMissed,
+      voicemails,
+    };
+  };
+};
+
 export const fetchHistory = async ({
   type,
   direction = "INCOMING",
@@ -98,7 +144,7 @@ export const fetchHistory = async ({
 }: FetchHistoryProps) => {
   try {
     const historyResponse = await axios(
-      `/history?types=${type}&offset=0&limit=20&archived=${archived}&direction=${direction}`,
+      `/history?types=${type}&offset=0&limit=20&archived=${archived}&directions=${direction}`,
       {
         baseURL: BASE_URL,
         method: "GET",
@@ -120,4 +166,26 @@ export const fetchHistory = async ({
     console.error("Error:", (error as AxiosError).message);
     return null;
   }
+};
+
+export const fetchHistoryWrapper = async ({
+  type = "CALL",
+  direction = "INCOMING",
+  archived = false,
+}) => {
+  const fetchHeaders = new Headers();
+  fetchHeaders.append("Accept", "application/json");
+  fetchHeaders.append("Content-Type", "application/json");
+  fetchHeaders.append(
+    "Authorization",
+    `Basic ${btoa(`${HISTORY_TOKEN_ID}:${HISTORY_TOKEN}`)}`
+  );
+
+  return fetch(
+    `${BASE_URL}/history?types=${type}&offset=0&limit=20&archived=${archived}&directions=${direction}`,
+    {
+      method: "GET",
+      headers: fetchHeaders,
+    }
+  ).then((res) => res.json());
 };
